@@ -1,5 +1,6 @@
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
+import { stringToUint8Array } from 'uint8array-extras';
 
 describe('Vector Graphics', () => {
   let document;
@@ -14,9 +15,9 @@ describe('Vector Graphics', () => {
   describe('dash', () => {
     test('with numeric length argument', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
-        '1 0 0 -1 0 792 cm\n50 20 m\n[2 2] 0 d\nS\n',
-        'binary',
+      //TODO binary
+      const vectorStream = stringToUint8Array(
+        '1 0 0 -1 0 792 cm\n50 20 m\n[2 2] 0 d\nS\n'
       );
 
       document.moveTo(50, 20).dash(2).stroke();
@@ -36,9 +37,9 @@ describe('Vector Graphics', () => {
 
     test('with array length argument', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
-        '1 0 0 -1 0 792 cm\n50 20 m\n[1 2] 0 d\nS\n',
-        'binary',
+      //TODO binary
+      const vectorStream = stringToUint8Array(
+        '1 0 0 -1 0 792 cm\n50 20 m\n[1 2] 0 d\nS\n'
       );
 
       document.moveTo(50, 20).dash([1, 2]).stroke();
@@ -58,9 +59,9 @@ describe('Vector Graphics', () => {
 
     test('with space option', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
-        '1 0 0 -1 0 792 cm\n50 20 m\n[2 10] 0 d\nS\n',
-        'binary',
+      //TODO binary
+      const vectorStream = stringToUint8Array(
+        '1 0 0 -1 0 792 cm\n50 20 m\n[2 10] 0 d\nS\n'
       );
 
       document.moveTo(50, 20).dash(2, { space: 10 }).stroke();
@@ -80,9 +81,9 @@ describe('Vector Graphics', () => {
 
     test('with phase option', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
-        '1 0 0 -1 0 792 cm\n50 20 m\n[2 2] 8 d\nS\n',
-        'binary',
+      //TODO binary
+      const vectorStream = stringToUint8Array(
+        '1 0 0 -1 0 792 cm\n50 20 m\n[2 2] 8 d\nS\n'
       );
 
       document.moveTo(50, 20).dash(2, { phase: 8 }).stroke();
@@ -156,9 +157,9 @@ describe('Vector Graphics', () => {
   describe('translate', () => {
     test('identity transform is ignored', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
-        `1 0 0 -1 0 792 cm\n1 0 0 1 0 0 cm\n`,
-        'binary',
+      //TODO binary
+      const vectorStream = stringToUint8Array(
+        `1 0 0 -1 0 792 cm\n1 0 0 1 0 0 cm\n`
       );
 
       document.translate(0, 0);

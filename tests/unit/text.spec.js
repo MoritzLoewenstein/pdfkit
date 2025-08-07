@@ -1,5 +1,6 @@
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
+import { stringToUint8Array } from 'uint8array-extras';
 
 describe('Text', () => {
   let document;
@@ -29,7 +30,8 @@ describe('Text', () => {
     test('with content ending after page right margin', () => {
       const docData = logData(document);
 
-      const textStream = Buffer.from(
+      //TODO binary
+      const textStream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 q
 1 0 0 -1 0 792 cm
@@ -39,8 +41,7 @@ BT
 [<73696d706c65207465> 30 <7874> 0] TJ
 ET
 Q
-`,
-        'binary',
+`
       );
 
       document.text('simple text', 600, 20);
@@ -62,7 +63,8 @@ Q
       const docData = logData(document);
 
       const text = 'simple text';
-      const textStream = Buffer.from(
+      //TODO binary
+      const textStream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 q
 1 0 0 -1 0 792 cm
@@ -144,8 +146,7 @@ BT
 [<74> 0] TJ
 ET
 Q
-`,
-        'binary',
+`
       );
 
       // before this test, this case used to make the code run into an infinite loop.

@@ -1,5 +1,6 @@
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
+import { stringToUint8Array } from 'uint8array-extras';
 
 describe('Markings', () => {
   let document;
@@ -15,12 +16,12 @@ describe('Markings', () => {
     test('non-structural', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Span BMC
 EMC
-`,
-        'binary',
+`
       );
 
       document.markContent('Span');
@@ -42,7 +43,8 @@ EMC
     test('structural', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Span <<
 /MCID 0
@@ -52,8 +54,7 @@ EMC
 /MCID 1
 >> BDC
 EMC
-`,
-        'binary',
+`
       );
 
       const structureContent1 = document.markStructureContent('Span');
@@ -83,7 +84,8 @@ EMC
     test('marked using closure', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Span <<
 /MCID 0
@@ -93,8 +95,7 @@ EMC
 /MCID 1
 >> BDC
 EMC
-`,
-        'binary',
+`
       );
 
       document.addStructure(document.struct('Span', () => {}));
@@ -116,7 +117,8 @@ EMC
     test('with options', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Artifact <<
 /Type /Pagination
@@ -131,8 +133,7 @@ EMC
 /ActualText (Hello, world! )
 >> BDC
 EMC
-`,
-        'binary',
+`
       );
 
       document.markContent('Artifact', {
@@ -165,7 +166,8 @@ EMC
     test('automatically closed', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Span BMC
 /P <<
@@ -191,8 +193,7 @@ EMC
 >> BDC
 EMC
 EMC
-`,
-        'binary',
+`
       );
 
       document.markContent('Span');
@@ -220,7 +221,8 @@ EMC
     test('continued on a new page', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /P <<
 /MCID 0
@@ -228,8 +230,7 @@ EMC
 /Span BMC
 EMC
 EMC
-`,
-        'binary',
+`
       );
 
       const structureContent = document.markStructureContent('P');
@@ -621,7 +622,8 @@ EMC
     test('adds paragraphs to structure', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /P <<
 /MCID 0
@@ -647,8 +649,7 @@ BT
 ET
 Q
 EMC
-`,
-        'binary',
+`
       );
 
       const section = document.struct('Sect');
@@ -686,7 +687,8 @@ EMC
     test('adds list items to structure', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Lbl <<
 /MCID 0
@@ -734,8 +736,7 @@ BT
 ET
 Q
 EMC
-`,
-        'binary',
+`
       );
 
       const list = document.struct('List');

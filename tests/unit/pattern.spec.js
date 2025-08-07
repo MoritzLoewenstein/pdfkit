@@ -1,5 +1,6 @@
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
+import { stringToUint8Array } from 'uint8array-extras';
 
 describe('Pattern', function () {
   let document;
@@ -14,7 +15,7 @@ describe('Pattern', function () {
   test('Uncolored tiling pattern', () => {
     const docData = logData(document);
     const patternStream = '1 w 0 1 m 4 5 l s 2 0 m 5 3 l s';
-    const binaryStream = Buffer.from(`${patternStream}\n`, 'binary');
+    const binaryStream = stringToUint8Array(`${patternStream}\n`);
     const pattern = document.pattern([1, 1, 4, 4], 3, 3, patternStream);
     document.rect(0, 0, 100, 100).fill([pattern, 'blue']).end();
 
@@ -59,13 +60,13 @@ describe('Pattern', function () {
     expect(docData).toContainChunk(['8 0 obj', `[/Pattern /DeviceCMYK]`]);
     expect(docData).toContainChunk(['9 0 obj', `[/Pattern /DeviceRGB]`]);
     // graphics
-    const graphicsStream = Buffer.from(
+    //TODO binary
+    const graphicsStream = stringToUint8Array(
       `1 0 0 -1 0 792 cm
 0 0 100 100 re
 /CsPDeviceRGB cs
 0 0 1 /P1 scn
-f\n`,
-      'binary',
+f\n`
     );
     expect(docData).toContainChunk([
       '5 0 obj',

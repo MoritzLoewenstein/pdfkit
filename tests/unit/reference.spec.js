@@ -1,7 +1,8 @@
 import PDFReference from '../../lib/reference';
 import PDFDocument from '../../lib/document';
-import zlib from 'zlib';
+import zlib from 'node:zlib';
 import { logData } from './helpers';
+import { stringToUint8Array } from 'uint8array-extras';
 
 describe('PDFReference', () => {
   let document;
@@ -36,7 +37,7 @@ describe('PDFReference', () => {
 
   test('written data of reference with uncompressed data', () => {
     const docData = logData(document);
-    const chunk = Buffer.from('test');
+    const chunk = stringToUint8Array('test');
     const ref = new PDFReference(document, 1);
     ref.compress = false;
     ref.write(chunk);
@@ -55,7 +56,7 @@ describe('PDFReference', () => {
 
   test('written data of reference with compressed data', () => {
     const docData = logData(document);
-    const chunk = Buffer.from('test');
+    const chunk = stringToUint8Array('test');
     const compressed = zlib.deflateSync(chunk);
     const ref = new PDFReference(document, 1);
     ref.write(chunk);

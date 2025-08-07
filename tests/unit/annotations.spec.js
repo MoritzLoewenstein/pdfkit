@@ -1,10 +1,11 @@
 import PDFDocument from '../../lib/document';
 import PDFSecurity from '../../lib/security';
 import { logData } from './helpers';
+import { stringToUint8Array } from 'uint8array-extras';
 
 // manual mock for PDFSecurity to ensure stored id will be the same accross different systems
 PDFSecurity.generateFileID = () => {
-  return Buffer.from('mocked-pdf-id');
+  return stringToUint8Array('mocked-pdf-id');
 };
 
 describe('Annotations', () => {
@@ -106,7 +107,7 @@ describe('Annotations', () => {
       const docData = logData(document);
 
       document.fileAnnotation(100, 100, 20, 20, {
-        src: Buffer.from('example text'),
+        src: stringToUint8Array('example text'),
         name: 'file.txt',
       });
 
@@ -127,7 +128,7 @@ describe('Annotations', () => {
       const docData = logData(document);
 
       document.fileAnnotation(100, 100, 20, 20, {
-        src: Buffer.from('example text'),
+        src: stringToUint8Array('example text'),
         name: 'file.txt',
         description: 'file description',
       });
@@ -155,7 +156,7 @@ describe('Annotations', () => {
         20,
         20,
         {
-          src: Buffer.from('example text'),
+          src: stringToUint8Array('example text'),
           name: 'file.txt',
           description: 'file description',
         },

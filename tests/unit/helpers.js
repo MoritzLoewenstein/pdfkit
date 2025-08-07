@@ -8,7 +8,7 @@
  * @property {string} font
  * @property {number} fontSize
  *
- * @typedef {string | Buffer} PDFDataItem
+ * @typedef {string | Uint8Array} PDFDataItem
  * @typedef {Array<PDFDataItem>} PDFData
  *
  * @typedef {object} PDFDataObject
