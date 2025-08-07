@@ -1,6 +1,6 @@
 import PDFReference from '../../lib/reference';
 import PDFDocument from '../../lib/document';
-import zlib from 'zlib';
+import zlib from 'node:zlib';
 import { logData } from './helpers';
 
 describe('PDFReference', () => {

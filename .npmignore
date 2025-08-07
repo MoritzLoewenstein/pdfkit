@@ -2,7 +2,6 @@
 .git-blame-ignore-revs
 .prettierrc
 .prettierignore
-.babelrc
 node-zlib/
 node-modules/
 CONTRIBUTING.md
