@@ -85,33 +85,5 @@ export default [
         comments: false
       })
     ]
-  },
-  {
-    input: 'lib/virtual-fs.js',
-    external,
-    output: {
-      name: 'virtual-fs',
-      file: 'js/virtual-fs.js',
-      format: 'cjs',
-      sourcemap: false
-    },
-    plugins: [
-      babel({
-        babelHelpers: 'bundled',
-        babelrc: false,
-        presets: [
-          [
-            '@babel/preset-env',
-            {
-              loose: true,
-              modules: false,
-              targets: {
-                browsers: supportedBrowsers
-              }
-            }
-          ]
-        ]
-      })
-    ]
   }
 ];
