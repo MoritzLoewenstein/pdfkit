@@ -62,7 +62,7 @@ function getObjects(data) {
   const objects = [];
   let currentObject = null;
   for (const item of data) {
-    if (item instanceof Uint8Array) {
+    if (isUint8Array(item)) {
       if (currentObject) {
         currentObject.items.push(item);
       }

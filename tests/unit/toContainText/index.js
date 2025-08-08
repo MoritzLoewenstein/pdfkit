@@ -1,4 +1,5 @@
 import { getObjects, parseTextStream } from '../helpers.js';
+import { isUint8Array } from 'uint8array-extras';
 
 /**
  * @import { TextStream, PDFDataObject } from '../helpers.js';
@@ -68,7 +69,7 @@ function getTextStream(object) {
   if (object.items[1] !== 'stream') {
     return;
   }
-  if (!(object.items[2] instanceof Uint8Array)) {
+  if (!isUint8Array(object.items[2])) {
     return;
   }
   if (!/endstream/.test(object.items[3])) {
