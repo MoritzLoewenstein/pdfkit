@@ -1,8 +1,8 @@
+import zlib from 'node:zlib';
+import { stringToUint8Array } from 'uint8array-extras';
 import PDFReference from '../../lib/reference';
 import PDFDocument from '../../lib/document';
-import zlib from 'node:zlib';
 import { logData } from './helpers';
-import { stringToUint8Array } from 'uint8array-extras';
 
 describe('PDFReference', () => {
   let document;
