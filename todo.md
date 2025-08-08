@@ -18,6 +18,7 @@
 ## Rewrite Parts
 
 - [ ] replace all `Buffer` usage with `Uint8Array`
+- [ ] check if nodejs buffer binary encoding is equivalent to utf8 (search: "TODO binary")
 - [ ] implement crypto.node.js and crypto.browser.js to replace crypto-js (only needed functions in security.js and attachments.js)
 - [ ] replace or rewrite png-js
 - [ ] rewrite utility scripts to use esm
