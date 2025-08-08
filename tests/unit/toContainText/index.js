@@ -68,7 +68,7 @@ function getTextStream(object) {
   if (object.items[1] !== 'stream') {
     return;
   }
-  if (!(object.items[2] instanceof Buffer)) {
+  if (!(object.items[2] instanceof Uint8Array)) {
     return;
   }
   if (!/endstream/.test(object.items[3])) {
@@ -81,7 +81,7 @@ function getTextStream(object) {
 export default {
   /**
    *
-   * @param {(string | Buffer)[]} data
+   * @param {(string | Uint8Array)[]} data
    * @param {Partial<TextStream>} textStream
    * @returns
    */

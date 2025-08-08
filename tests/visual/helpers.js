@@ -1,5 +1,6 @@
 import PDFDocument from '../../lib/document';
 import { pdf2png } from './pdf2png.js';
+import { concatUint8Arrays } from 'uint8array-extras';
 
 function runDocTest(options, fn) {
   if (typeof options === 'function') {
@@ -22,7 +23,7 @@ function runDocTest(options, fn) {
         doc.on('data', buffers.push.bind(buffers));
         doc.on('end', async () => {
           try {
-            const pdfData = Buffer.concat(buffers);
+            const pdfData = concatUint8Arrays(buffers);
             const { systemFonts = false } = options;
             const images = await pdf2png(pdfData, { systemFonts });
             for (let image of images) {

@@ -1,5 +1,5 @@
 import PDFDocument from '../../lib/document';
-import { logData } from './helpers';
+import { logData, uint8ArrayStringify } from './helpers';
 
 describe('PDF/UA', () => {
   test('metadata is present', () => {
@@ -28,7 +28,7 @@ describe('PDF/UA', () => {
     let doc = new PDFDocument(options);
     const data = logData(doc);
     doc.end();
-    let metadata = Buffer.from(data[24]).toString();
+    let metadata = uint8ArrayStringify(data[24]);
 
     expect(metadata).toContain('pdfuaid:part>1');
   });

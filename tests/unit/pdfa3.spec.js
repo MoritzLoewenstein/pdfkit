@@ -1,5 +1,5 @@
 import PDFDocument from '../../lib/document';
-import { logData, joinTokens } from './helpers';
+import { logData, joinTokens, uint8ArrayStringify } from './helpers';
 
 describe('PDF/A-3', () => {
   test('metadata is present', () => {
@@ -50,7 +50,7 @@ describe('PDF/A-3', () => {
     let doc = new PDFDocument(options);
     const data = logData(doc);
     doc.end();
-    let metadata = Buffer.from(data[27]).toString();
+    let metadata = uint8ArrayStringify(data[27]);
 
     expect(metadata).toContain('pdfaid:part>3');
     expect(metadata).toContain('pdfaid:conformance');
@@ -65,7 +65,7 @@ describe('PDF/A-3', () => {
     let doc = new PDFDocument(options);
     const data = logData(doc);
     doc.end();
-    let metadata = Buffer.from(data[27]).toString();
+    let metadata = uint8ArrayStringify(data[27]);
 
     expect(metadata).toContain('pdfaid:conformance>B');
   });
@@ -79,7 +79,7 @@ describe('PDF/A-3', () => {
     let doc = new PDFDocument(options);
     const data = logData(doc);
     doc.end();
-    let metadata = Buffer.from(data[27]).toString();
+    let metadata = uint8ArrayStringify(data[27]);
 
     expect(metadata).toContain('pdfaid:conformance>A');
   });

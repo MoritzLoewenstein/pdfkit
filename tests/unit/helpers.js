@@ -1,3 +1,16 @@
+import { uint8ArrayToString, isUint8Array } from 'uint8array-extras';
+
+export function uint8ArrayStringify(data) {
+  if (typeof data === 'string') {
+    return data;
+  }
+  if (isUint8Array(data)) {
+    return uint8ArrayToString(data);
+  }
+  throw new Error('Unsupported data type');
+}
+
+
 /**
  * @import PDFDocument from '../../lib/document';
  */
@@ -49,7 +62,7 @@ function getObjects(data) {
   const objects = [];
   let currentObject = null;
   for (const item of data) {
-    if (item instanceof Buffer) {
+    if (item instanceof Uint8Array) {
       if (currentObject) {
         currentObject.items.push(item);
       }
@@ -68,11 +81,11 @@ function getObjects(data) {
 }
 
 /**
- * @param {Buffer} textStream
+ * @param {Uint8Array} textStream
  * @return {TextStream | undefined}
  */
 function parseTextStream(textStream) {
-  const decodedStream = textStream.toString('utf8');
+  const decodedStream = uint8ArrayToString(textStream);
 
   // Extract font and font size
   const fontMatch = decodedStream.match(/\/([A-Za-z0-9]+)\s+(\d+)\s+Tf/);
@@ -101,7 +114,7 @@ function parseTextStream(textStream) {
     // Convert hex to string
     const hex = m[1];
     for (let i = 0; i < hex.length; i += 2) {
-      const code = parseInt(hex.substr(i, 2), 16);
+      const code = parseInt(hex.substring(i, i + 2), 16);
       let char = String.fromCharCode(code);
       // Handle special cases
       if (code === 0x0a) {
