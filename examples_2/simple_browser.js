@@ -1,5 +1,5 @@
 import PDFDocument from '../lib/document';
-import { documentToArrayBuffer, documentToBlob } from '../lib/document_util';
+import { documentToBlob } from '../lib/document_util';
 import { makeSimplePdf } from './simple_pdf';
 
 // eslint-disable-next-line no-undef

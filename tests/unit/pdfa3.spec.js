@@ -1,5 +1,5 @@
 import PDFDocument from '../../lib/document';
-import { logData, joinTokens, uint8ArrayStringify } from './helpers';
+import { joinTokens, logData, uint8ArrayStringify } from './helpers';
 
 describe('PDF/A-3', () => {
   test('metadata is present', () => {

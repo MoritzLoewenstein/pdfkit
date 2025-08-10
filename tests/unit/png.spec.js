@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import PDFDocument from '../../lib/document';
-import PDFReference from '../../lib/reference';
 import PNGImage from '../../lib/image/png';
+import PDFReference from '../../lib/reference';
 
 describe('PNGImage', () => {
   let document;

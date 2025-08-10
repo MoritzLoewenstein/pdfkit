@@ -1,5 +1,5 @@
-import { runDocTest } from '../helpers';
 import { jpeg as bee } from '../../images/bee';
+import { runDocTest } from '../helpers';
 
 describe('pdfmake', function() {
   // somehow the generated pdf changes at each run

@@ -1,6 +1,6 @@
+import { stringToUint8Array } from 'uint8array-extras';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
-import { stringToUint8Array } from 'uint8array-extras';
 
 describe('Pattern', function () {
   let document;
@@ -66,7 +66,7 @@ describe('Pattern', function () {
 0 0 100 100 re
 /CsPDeviceRGB cs
 0 0 1 /P1 scn
-f\n`
+f\n`,
     );
     expect(docData).toContainChunk([
       '5 0 obj',

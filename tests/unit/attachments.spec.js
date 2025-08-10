@@ -1,8 +1,8 @@
+import { createHash } from 'node:crypto';
+import { stringToUint8Array } from 'uint8array-extras';
 import PDFDocument from '../../lib/document';
 import PDFSecurity from '../../lib/security';
 import { logData } from './helpers';
-import { createHash } from 'node:crypto';
-import { stringToUint8Array } from 'uint8array-extras';
 
 // manual mock for PDFSecurity to ensure stored id will be the same across different systems
 PDFSecurity.generateFileID = () => {

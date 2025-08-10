@@ -1,5 +1,5 @@
-import { getObjects, parseTextStream } from '../helpers.js';
 import { isUint8Array } from 'uint8array-extras';
+import { getObjects, parseTextStream } from '../helpers.js';
 
 /**
  * @import { TextStream, PDFDataObject } from '../helpers.js';

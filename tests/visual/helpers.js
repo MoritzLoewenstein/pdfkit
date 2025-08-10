@@ -1,6 +1,6 @@
+import { concatUint8Arrays } from 'uint8array-extras';
 import PDFDocument from '../../lib/document';
 import { pdf2png } from './pdf2png.js';
-import { concatUint8Arrays } from 'uint8array-extras';
 
 function runDocTest(options, fn) {
   if (typeof options === 'function') {

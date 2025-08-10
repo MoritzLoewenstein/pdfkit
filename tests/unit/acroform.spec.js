@@ -1,8 +1,8 @@
-import PDFDocument from '../../lib/document';
-import PDFSecurity from '../../lib/security';
-import { logData, joinTokens } from './helpers';
-import PDFFontFactory from '../../lib/font_factory';
 import { stringToUint8Array } from 'uint8array-extras';
+import PDFDocument from '../../lib/document';
+import PDFFontFactory from '../../lib/font_factory';
+import PDFSecurity from '../../lib/security';
+import { joinTokens, logData } from './helpers';
 
 // manual mock for PDFSecurity to ensure stored id will be the same accross different systems
 PDFSecurity.generateFileID = () => {

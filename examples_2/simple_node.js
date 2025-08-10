@@ -1,5 +1,5 @@
-import { buffer} from 'node:stream/consumers';
 import { readFileSync, writeFileSync } from 'node:fs';
+import { buffer } from 'node:stream/consumers';
 import PDFDocument from '../dist/pdfkit.js';
 import { makeSimplePdf } from './simple_pdf.js';
 

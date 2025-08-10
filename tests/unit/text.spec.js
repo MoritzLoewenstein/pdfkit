@@ -1,6 +1,6 @@
+import { stringToUint8Array } from 'uint8array-extras';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
-import { stringToUint8Array } from 'uint8array-extras';
 
 describe('Text', () => {
   let document;
@@ -41,7 +41,7 @@ BT
 [<73696d706c65207465> 30 <7874> 0] TJ
 ET
 Q
-`
+`,
       );
 
       document.text('simple text', 600, 20);
@@ -146,7 +146,7 @@ BT
 [<74> 0] TJ
 ET
 Q
-`
+`,
       );
 
       // before this test, this case used to make the code run into an infinite loop.

@@ -1,4 +1,4 @@
-import { uint8ArrayToString, isUint8Array } from 'uint8array-extras';
+import { isUint8Array, uint8ArrayToString } from 'uint8array-extras';
 
 export function uint8ArrayStringify(data) {
   if (typeof data === 'string') {
@@ -9,7 +9,6 @@ export function uint8ArrayStringify(data) {
   }
   throw new Error('Unsupported data type');
 }
-
 
 /**
  * @import PDFDocument from '../../lib/document';

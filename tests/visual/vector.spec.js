@@ -1,4 +1,5 @@
 import { runDocTest } from './helpers';
+
 var tiger = require('../../examples/tiger');
 
 describe('vector', function () {

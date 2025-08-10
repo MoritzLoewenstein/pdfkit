@@ -1,6 +1,6 @@
+import { stringToUint8Array } from 'uint8array-extras';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
-import { stringToUint8Array } from 'uint8array-extras';
 
 describe('Markings', () => {
   let document;
@@ -21,7 +21,7 @@ describe('Markings', () => {
         `1 0 0 -1 0 792 cm
 /Span BMC
 EMC
-`
+`,
       );
 
       document.markContent('Span');
@@ -54,7 +54,7 @@ EMC
 /MCID 1
 >> BDC
 EMC
-`
+`,
       );
 
       const structureContent1 = document.markStructureContent('Span');
@@ -95,7 +95,7 @@ EMC
 /MCID 1
 >> BDC
 EMC
-`
+`,
       );
 
       document.addStructure(document.struct('Span', () => {}));
@@ -133,7 +133,7 @@ EMC
 /ActualText (Hello, world! )
 >> BDC
 EMC
-`
+`,
       );
 
       document.markContent('Artifact', {
@@ -193,7 +193,7 @@ EMC
 >> BDC
 EMC
 EMC
-`
+`,
       );
 
       document.markContent('Span');
@@ -230,7 +230,7 @@ EMC
 /Span BMC
 EMC
 EMC
-`
+`,
       );
 
       const structureContent = document.markStructureContent('P');
@@ -649,7 +649,7 @@ BT
 ET
 Q
 EMC
-`
+`,
       );
 
       const section = document.struct('Sect');
@@ -736,7 +736,7 @@ BT
 ET
 Q
 EMC
-`
+`,
       );
 
       const list = document.struct('List');

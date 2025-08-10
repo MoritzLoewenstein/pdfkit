@@ -1,7 +1,7 @@
+import { stringToUint8Array } from 'uint8array-extras';
 import PDFDocument from '../../lib/document';
 import PDFSecurity from '../../lib/security';
 import { logData } from './helpers';
-import { stringToUint8Array } from 'uint8array-extras';
 
 // manual mock for PDFSecurity to ensure stored id will be the same accross different systems
 PDFSecurity.generateFileID = () => {

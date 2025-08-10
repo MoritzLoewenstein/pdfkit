@@ -1,4 +1,4 @@
-import { readFileSync, createWriteStream } from 'node:fs';
+import { createWriteStream, readFileSync } from 'node:fs';
 import PDFDocument from '../dist/pdfkit.js';
 import { makeSimplePdf } from './simple_pdf.js';
 
@@ -18,6 +18,6 @@ const doc = new PDFDocument({
   },
 });
 doc.registerFont(FONT_ITALIC, robotoMonoItalicData);
-const fileWriteStream = createWriteStream("examples_2/simple_node_stream.pdf");
+const fileWriteStream = createWriteStream('examples_2/simple_node_stream.pdf');
 doc.pipe(fileWriteStream);
 makeSimplePdf(doc, FONT_ITALIC);
