@@ -20,7 +20,6 @@
     "useEditorconfig": true,
     "includes": [
       "**",
-      "!demo/bundle.js",
       "!tests/images/bee.js",
       "!tests/visual/pdfmake/*.js"
     ]
@@ -92,7 +91,8 @@
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "single"
+      "quoteStyle": "single",
+      "trailingCommas": "all"
     },
     "globals": ["exports"]
   },
