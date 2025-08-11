@@ -12,10 +12,8 @@ const FONT_DEFAULT = 'RobotoMono';
 const FONT_ITALIC = 'RobotoMonoItalic';
 const doc = new PDFDocument({
   compress: false,
-  fonts: {
-    name: FONT_DEFAULT,
-    data: robotoMonoData,
-  },
+  font: FONT_DEFAULT,
+  fontData: robotoMonoData,
 });
 doc.registerFont(FONT_ITALIC, robotoMonoItalicData);
 const fileWriteStream = createWriteStream('examples_2/simple_node_stream.pdf');

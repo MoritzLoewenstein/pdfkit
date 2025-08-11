@@ -1,4 +1,5 @@
 import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PDFSecurity from '../../lib/security';
 import { logData } from './helpers';
@@ -13,6 +14,7 @@ describe('Annotations', () => {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
     });
   });
@@ -89,7 +91,6 @@ describe('Annotations', () => {
       });
       document.text('no continued link', { link: null });
 
-      // console.log(docData);
       expect(docData).toContainChunk([
         `11 0 obj`,
         `<<

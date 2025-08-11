@@ -11,6 +11,11 @@ function runDocTest(options, fn) {
     options.info = {};
   }
 
+  options = {
+    ...globalThis.DEFAULT_OPTIONS,
+    ...options,
+  };
+
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument(options);
     const buffers = [];

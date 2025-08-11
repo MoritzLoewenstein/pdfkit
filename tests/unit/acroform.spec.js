@@ -1,4 +1,5 @@
 import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PDFFontFactory from '../../lib/font_factory';
 import PDFSecurity from '../../lib/security';
@@ -14,6 +15,7 @@ describe('acroform', () => {
 
   beforeEach(() => {
     doc = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
     });
   });
@@ -215,6 +217,7 @@ describe('acroform', () => {
 
   test('false flags should be ignored', () => {
     const expectedDoc = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
     });
     expectedDoc.initForm();

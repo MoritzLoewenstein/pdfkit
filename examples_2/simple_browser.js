@@ -25,16 +25,13 @@ async function createPdf(keepUrl = false) {
   const FONT_ITALIC = 'RobotoMonoItalic';
   const doc = new PDFDocument({
     compress: false,
-    fonts: {
-      name: FONT_DEFAULT,
-      data: robotoMonoData,
-    },
+    fonts: FONT_DEFAULT,
+    fontData: robotoMonoData,
   });
   doc.registerFont(FONT_ITALIC, robotoMonoItalicData);
   const blobPromise = documentToBlob(doc);
   makeSimplePdf(doc, FONT_ITALIC);
   const blob = await blobPromise;
-  console.log(blob);
   const url = URL.createObjectURL(blob);
   const iframe = document.querySelector('iframe');
   iframe.src = url;

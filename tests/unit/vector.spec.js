@@ -1,4 +1,5 @@
 import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
 
@@ -7,6 +8,7 @@ describe('Vector Graphics', () => {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
       compress: false,
     });
@@ -103,19 +105,19 @@ describe('Vector Graphics', () => {
 
     describe('validation', () => {
       test('length 1', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(1)).not.toThrow();
       });
 
       test('length 1.5', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(1.5)).not.toThrow();
       });
 
       test('length 0 throws', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(0)).toThrow(
           'dash(0, {}) invalid, lengths must be numeric and greater than zero',
@@ -123,7 +125,7 @@ describe('Vector Graphics', () => {
       });
 
       test('length -1 throws', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(-1)).toThrow(
           'dash(-1, {}) invalid, lengths must be numeric and greater than zero',
@@ -131,7 +133,7 @@ describe('Vector Graphics', () => {
       });
 
       test('length null throws', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(null)).toThrow(
           'dash(null, {}) invalid, lengths must be numeric and greater than zero',
@@ -139,13 +141,13 @@ describe('Vector Graphics', () => {
       });
 
       test('length array', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash([2, 3])).not.toThrow();
       });
 
       test('length array containing zeros throws', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash([2, 0, 3])).toThrow(
           'dash([2,0,3], {}) invalid, lengths must be numeric and greater than zero',

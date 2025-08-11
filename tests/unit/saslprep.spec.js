@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest';
 import saslprep from '../../lib/saslprep';
 
 const chr = String.fromCodePoint;

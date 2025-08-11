@@ -1,9 +1,11 @@
+import { describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { joinTokens, logData, uint8ArrayStringify } from './helpers';
 
 describe('PDF/A-2', () => {
   test('metadata is present', () => {
     let options = {
+      ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.7',
       subset: 'PDF/A-2',
@@ -31,6 +33,7 @@ describe('PDF/A-2', () => {
       ),
     ];
     let options = {
+      ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.7',
       subset: 'PDF/A-2',
@@ -43,6 +46,7 @@ describe('PDF/A-2', () => {
 
   test('metadata contains pdfaid part and conformance', () => {
     let options = {
+      ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.7',
       subset: 'PDF/A-2',
@@ -58,6 +62,7 @@ describe('PDF/A-2', () => {
 
   test('metadata pdfaid conformance B', () => {
     let options = {
+      ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.7',
       subset: 'PDF/A-2b',
@@ -72,6 +77,7 @@ describe('PDF/A-2', () => {
 
   test('metadata pdfaid conformance A', () => {
     let options = {
+      ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.7',
       subset: 'PDF/A-2a',
@@ -86,6 +92,7 @@ describe('PDF/A-2', () => {
 
   test('font data NOT contains CIDSet', () => {
     let options = {
+      ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.4',
       subset: 'PDF/A-2a',

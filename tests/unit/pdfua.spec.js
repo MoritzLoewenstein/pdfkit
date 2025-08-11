@@ -1,9 +1,11 @@
+import { describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { logData, uint8ArrayStringify } from './helpers';
 
 describe('PDF/UA', () => {
   test('metadata is present', () => {
     let options = {
+      ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.7',
       subset: 'PDF/UA',
@@ -20,6 +22,7 @@ describe('PDF/UA', () => {
 
   test('metadata constains pdfuaid part', () => {
     let options = {
+      ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.7',
       subset: 'PDF/UA',

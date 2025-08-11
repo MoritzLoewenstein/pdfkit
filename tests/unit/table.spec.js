@@ -1,15 +1,16 @@
+import { describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PDFTable from '../../lib/table';
 import { deepMerge } from '../../lib/table/utils';
 
 describe('table', () => {
   test('created', () => {
-    const document = new PDFDocument();
+    const document = new PDFDocument(globalThis.DEFAULT_OPTIONS);
     expect(document.table()).toBeInstanceOf(PDFTable);
     expect(document.table({ data: [] })).toBe(document);
   });
   test('row', () => {
-    const document = new PDFDocument();
+    const document = new PDFDocument(globalThis.DEFAULT_OPTIONS);
     const table = document.table();
     table.row(['A', 'B', 'C']);
     expect(table._columnWidths.length).toBe(3);

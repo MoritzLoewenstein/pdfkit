@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import LineWrapper from '../../lib/line_wrapper';
 
@@ -6,6 +7,7 @@ describe('LineWrapper', () => {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.HELVETICA_OPTIONS,
       compress: false,
       margin: 0,
     });

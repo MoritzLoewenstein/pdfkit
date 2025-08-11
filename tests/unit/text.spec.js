@@ -1,12 +1,14 @@
-import { stringToUint8Array } from 'uint8array-extras';
+import { isUint8Array, stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
-import { logData } from './helpers';
+import { logData, uint8ArrayStringify } from './helpers';
 
 describe('Text', () => {
   let document;
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
       compress: false,
     });

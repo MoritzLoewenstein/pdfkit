@@ -1,5 +1,6 @@
 import zlib from 'node:zlib';
 import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PDFReference from '../../lib/reference';
 import { logData } from './helpers';
@@ -7,7 +8,7 @@ import { logData } from './helpers';
 describe('PDFReference', () => {
   let document;
   beforeEach(() => {
-    document = new PDFDocument();
+    document = new PDFDocument(globalThis.DEFAULT_OPTIONS);
   });
 
   test('instantiated without data', () => {

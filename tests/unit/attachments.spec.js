@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PDFSecurity from '../../lib/security';
 import { logData } from './helpers';
@@ -16,6 +17,7 @@ describe('file', () => {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: date },
     });
   });

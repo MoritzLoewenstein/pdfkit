@@ -18,11 +18,7 @@
     "bracketSpacing": true,
     "expand": "auto",
     "useEditorconfig": true,
-    "includes": [
-      "**",
-      "!tests/images/bee.js",
-      "!tests/visual/pdfmake/*.js"
-    ]
+    "includes": ["**", "!tests/images/bee.js", "!tests/visual/pdfmake/*.js"]
   },
   "linter": {
     "rules": {
