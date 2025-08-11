@@ -1,3 +1,6 @@
 .DS_Store
 node_modules
 dist
+
+examples_2/simple_node.pdf
+examples_2/simple_node_stream.pdf

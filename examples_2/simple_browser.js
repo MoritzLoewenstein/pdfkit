@@ -15,12 +15,12 @@ window.addEventListener('load', async () => {
 });
 
 async function createPdf(keepUrl = false) {
-  const robotoMonoData = await fetch(
-    '/fonts/roboto_mono/RobotoMono-Regular.ttf',
-  ).then((r) => r.arrayBuffer());
-  const robotoMonoItalicData = await fetch(
-    '/fonts/roboto_mono/RobotoMono-Italic.ttf',
-  ).then((r) => r.arrayBuffer());
+  const robotoMonoData = await fetch('/fonts/RobotoMono-Regular.ttf').then(
+    (r) => r.arrayBuffer(),
+  );
+  const robotoMonoItalicData = await fetch('/fonts/RobotoMono-Italic.ttf').then(
+    (r) => r.arrayBuffer(),
+  );
   const FONT_DEFAULT = 'RobotoMono';
   const FONT_ITALIC = 'RobotoMonoItalic';
   const doc = new PDFDocument({
