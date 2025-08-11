@@ -55,7 +55,7 @@
     "pdf-guide": "node docs/generate.js",
     "website": "node docs/generate_website.js",
     "publish-website": "node docs/publish_website.js",
-    "docs": "npm run pdf-guide && npm run website && npm run browserify-example",
+    "docs": "npm run pdf-guide && npm run website",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:snapshot-update": "vitest -u",
@@ -70,10 +70,5 @@
       "import": "./dist/pdfkit.mjs",
       "require": "./dist/pdfkit.umd.js"
     }
-  },
-  "jest": {
-    "testEnvironment": "jest-environment-jsdom",
-    "testPathIgnorePatterns": ["/node_modules/", "<rootDir>/examples/"],
-    "setupFilesAfterEnv": ["<rootDir>/tests/unit/setupTests.js"]
   }
 }
