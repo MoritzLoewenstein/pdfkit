@@ -1,8 +1,8 @@
+import { uint8ArrayToString } from 'uint8array-extras';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PDFFontFactory from '../../lib/font_factory';
 import { logData } from './helpers';
-import { uint8ArrayToString } from 'uint8array-extras';
 
 describe('EmbeddedFont', () => {
   test('no fontLayoutCache option', () => {
