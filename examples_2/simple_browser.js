@@ -25,7 +25,7 @@ async function createPdf(keepUrl = false) {
   const FONT_ITALIC = 'RobotoMonoItalic';
   const doc = new PDFDocument({
     compress: false,
-    fonts: FONT_DEFAULT,
+    font: FONT_DEFAULT,
     fontData: robotoMonoData,
   });
   doc.registerFont(FONT_ITALIC, robotoMonoItalicData);
