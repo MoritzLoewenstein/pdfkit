@@ -101,7 +101,7 @@ describe('acroform', () => {
     ];
 
     const docData = logData(doc);
-    doc.registerFont('myfont1', 'tests/fonts/Roboto-Regular.ttf');
+    doc.registerFont('myfont1', globalThis.ROBOTO_DATA);
 
     doc.font('Courier-Bold'); // establishes the default font
     doc.initForm();
@@ -266,7 +266,7 @@ describe('acroform', () => {
         '>>',
       'endobj',
     ];
-    doc.registerFont('myfont1', 'tests/fonts/Roboto-Regular.ttf');
+    doc.registerFont('myfont1', globalThis.ROBOTO_DATA);
     doc.initForm();
     const docData = logData(doc);
     let opts = {

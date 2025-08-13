@@ -64,10 +64,10 @@
   "engine": ["node >= v20.0.0"],
   "files": ["dist"],
   "main": "./dist/pdfkit.umd.cjs",
-  "module": "./dist/pdfkit.mjs",
+  "module": "./dist/pdfkit.js",
   "exports": {
     ".": {
-      "import": "./dist/pdfkit.mjs",
+      "import": "./dist/pdfkit.js",
       "require": "./dist/pdfkit.umd.js"
     }
   }

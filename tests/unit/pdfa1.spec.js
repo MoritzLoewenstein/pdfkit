@@ -4,13 +4,12 @@ import { joinTokens, logData, uint8ArrayStringify } from './helpers';
 
 describe('PDF/A-1', () => {
   test('metadata is present', () => {
-    let options = {
+    let doc = new PDFDocument({
       ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.4',
       subset: 'PDF/A-1',
-    };
-    let doc = new PDFDocument(options);
+    });
     const data = logData(doc);
     doc.end();
     expect(data).toContainChunk([
@@ -32,26 +31,24 @@ describe('PDF/A-1', () => {
         '>>',
       ),
     ];
-    let options = {
+    let doc = new PDFDocument({
       ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.4',
       subset: 'PDF/A-1',
-    };
-    let doc = new PDFDocument(options);
+    });
     const data = logData(doc);
     doc.end();
     expect(data).toContainChunk(expected);
   });
 
   test('metadata contains pdfaid part and conformance', () => {
-    let options = {
+    let doc = new PDFDocument({
       ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.4',
       subset: 'PDF/A-1',
-    };
-    let doc = new PDFDocument(options);
+    });
     const data = logData(doc);
     doc.end();
     let metadata = uint8ArrayStringify(data[27]);
@@ -61,13 +58,12 @@ describe('PDF/A-1', () => {
   });
 
   test('metadata pdfaid conformance B', () => {
-    let options = {
+    let doc = new PDFDocument({
       ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.4',
       subset: 'PDF/A-1b',
-    };
-    let doc = new PDFDocument(options);
+    });
     const data = logData(doc);
     doc.end();
     let metadata = uint8ArrayStringify(data[27]);
@@ -76,13 +72,12 @@ describe('PDF/A-1', () => {
   });
 
   test('metadata pdfaid conformance A', () => {
-    let options = {
+    let doc = new PDFDocument({
       ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.4',
       subset: 'PDF/A-1a',
-    };
-    let doc = new PDFDocument(options);
+    });
     const data = logData(doc);
     doc.end();
     let metadata = uint8ArrayStringify(data[27]);
@@ -91,16 +86,15 @@ describe('PDF/A-1', () => {
   });
 
   test('font data contains CIDSet', () => {
-    let options = {
+    let doc = new PDFDocument({
       ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       pdfVersion: '1.4',
       subset: 'PDF/A-1a',
-    };
-    let doc = new PDFDocument(options);
+    });
     const data = logData(doc);
     doc.addPage();
-    doc.registerFont('Roboto', 'tests/fonts/Roboto-Regular.ttf');
+    doc.registerFont('Roboto', globalThis.ROBOTO_DATA);
     doc.font('Roboto');
     doc.text('Text');
     doc.end();
