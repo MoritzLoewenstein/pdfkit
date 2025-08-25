@@ -1,7 +1,5 @@
 # TODO
 
-- other attempts to modernize: https://github.com/diegomura/react-pdf/tree/master/packages/pdfkit
-
 ## Build
 
 - [ ] fix png.js
@@ -11,6 +9,8 @@
 
 ## Tests
 
+- [ ] remove vite.config.js excluded files when developing on module
+- [ ] check describe.skip / test.skip test cases
 - [ ] replace `jest-image-snapshot` with vitest equivalent
 - [ ] replace `jest-environment-jsdom` with vitest equivalent
 

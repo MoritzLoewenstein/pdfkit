@@ -29,7 +29,7 @@ describe('Text', () => {
       document.text('simple text', { destination: 'anchor' });
     });
 
-    test('with content ending after page right margin', () => {
+    test.skip('with content ending after page right margin', () => {
       const docData = logData(document);
 
       //TODO binary

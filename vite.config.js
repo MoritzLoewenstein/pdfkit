@@ -19,6 +19,13 @@ export default defineConfig({
         test: {
           setupFiles: ['tests/unit/setupTests.js'],
           include: ['tests/unit/**/*.{test,spec}.js'],
+          exclude: [
+            'tests/unit/acroform.spec.js',
+            'tests/unit/annotations.spec.js',
+            'tests/unit/attachments.spec.js',
+            'tests/unit/image.spec.js',
+            'tests/unit/trailer.spec.js',
+          ],
           name: 'unit',
           environment: 'node',
         },

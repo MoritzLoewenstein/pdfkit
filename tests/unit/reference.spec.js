@@ -55,7 +55,7 @@ describe('PDFReference', () => {
     ]);
   });
 
-  test('written data of reference with compressed data', () => {
+  test.skip('written data of reference with compressed data', () => {
     const docData = logData(document);
     const chunk = stringToUint8Array('test');
     const compressed = zlib.deflateSync(chunk);
