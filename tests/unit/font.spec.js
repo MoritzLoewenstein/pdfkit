@@ -126,9 +126,8 @@ describe('sizeToPoint', () => {
     ['1cm', 28.3465],
     ['1mm', 2.8346],
     ['1pc', 12],
-    //TODO these two are failing right now, check master
-    //['1ex', 11.1],
-    //['1ch', 6.672],
+    ['1ex', 12],
+    ['1ch', 6.6738],
     ['1vw', 2.5],
     ['1vh', 5],
     ['1vmin', 2.5],

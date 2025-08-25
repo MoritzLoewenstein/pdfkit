@@ -80,10 +80,53 @@ function getObjects(data) {
 }
 
 /**
+ * @param {Uint8Array} bfrangeCandidate
+ * @returns {?Map<string,string>} hex charcode to utf8 char
+ */
+function getCMap(bfrangeCandidate) {
+  const RE_BFRANGE = /beginbfrange\s*([\s\S]*?)endbfrange/;
+  const objectText = uint8ArrayStringify(bfrangeCandidate);
+  const bfrangeMatch = objectText.match(RE_BFRANGE);
+  if (!bfrangeMatch) {
+    return null;
+  }
+
+  const charMap = new Map();
+  const bfrangeContent = bfrangeMatch[1];
+  const ranges = bfrangeContent.trim().split('\n');
+  ranges.forEach((range) => {
+    // Parse single range mapping like:
+    // <0000> <0009> [<0000> <0073> <0069> <006d> <0070> <006c> <0065> <0020> <0074> <0078>]
+    const match = range.trim().match(/<([^>]+)>\s*<([^>]+)>\s*\[(.*?)\]/);
+    if (!match) return;
+
+    const [, startHex, endHex, mappings] = match;
+    const unicodeValues = mappings.match(/<[^>]+>/g) || [];
+
+    const start = Number.parseInt(startHex, 16);
+    const end = Number.parseInt(endHex, 16);
+
+    // Map each value in range
+    for (let i = 0; i <= end - start; i++) {
+      const sourceHex = (start + i).toString(16).padStart(4, '0');
+      const targetHex = unicodeValues[i]?.replace(/[<>]/g, '') || '';
+      if (targetHex) {
+        // Convert hex to actual UTF-8 character
+        const char = String.fromCharCode(parseInt(targetHex, 16));
+        charMap.set(sourceHex, char);
+      }
+    }
+  });
+
+  return charMap;
+}
+
+/**
  * @param {Uint8Array} textStream
+ * @param {Map<string,string>} cMap
  * @return {TextStream | undefined}
  */
-function parseTextStream(textStream) {
+function parseTextStream(textStream, cMap = null) {
   const decodedStream = uint8ArrayToString(textStream);
 
   // Extract font and font size
@@ -101,14 +144,33 @@ function parseTextStream(textStream) {
   if (!tjMatch) {
     return undefined;
   }
+
+  // Match all hex strings like <...>
+  const hexMatches = [...tjMatch[1].matchAll(/<([0-9a-fA-F]+)>/g)];
   let text = '';
+
+  // if cMap is provided, uses cMap to decode hex chars
+  if (cMap !== null) {
+    if (!hexMatches) return undefined;
+
+    for (const m of hexMatches) {
+      const hexStr = m[1];
+      for (let i = 0; i < hexStr.length; i += 4) {
+        const hex = hexStr.substring(i, i + 4);
+        if (cMap.has(hex)) {
+          text += cMap.get(hex);
+        } else {
+          throw new Error(`Hex not in CMap ${hex}`);
+        }
+      }
+    }
+    return { text, font, fontSize };
+  }
 
   // this is a simplified version
   // the correct way is to retrieve the encoding from /Resources /Font dictionary and decode using it
   // https://stackoverflow.com/a/29468049/5724645
 
-  // Match all hex strings like <...>
-  const hexMatches = [...tjMatch[1].matchAll(/<([0-9a-fA-F]+)>/g)];
   for (const m of hexMatches) {
     // Convert hex to string
     const hex = m[1];
@@ -130,4 +192,4 @@ function parseTextStream(textStream) {
   return { text, font, fontSize };
 }
 
-export { logData, joinTokens, parseTextStream, getObjects };
+export { logData, joinTokens, parseTextStream, getObjects, getCMap };

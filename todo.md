@@ -4,12 +4,6 @@
 
 ## Build
 
-- [ ] replace PDFDocument ReadableStream with cross-platform compatible streams
-- [ ] replace LineWrapper EventEmitter with cross-platform compatible events
-- [ ] disable images and security.js for now (temporary)
-- [ ] create vite config for browser build (esm)
-- [ ] create vite config for node build (esm)
-- [ ] test pdf without images
 - [ ] fix png.js
 - [ ] fix jpeg.js
 - [ ] fix attachments.js
@@ -17,8 +11,6 @@
 
 ## Tests
 
-- migrate asap :)
-- [ ] replace `jest` with `vitest`
 - [ ] replace `jest-image-snapshot` with vitest equivalent
 - [ ] replace `jest-environment-jsdom` with vitest equivalent
 
@@ -28,7 +20,6 @@
 - [ ] check if nodejs buffer binary encoding is equivalent to utf8 (search: "TODO binary")
 - [ ] rewrite utility scripts to use esm
 - [ ] rewrite examples?
-
 
 ## libraries
 
@@ -54,14 +45,6 @@
 - fast-png uses pako?
 - only function used: deflateSync
 - https://github.com/telerik/pako-esm
-
-### node:stream
-
-- PDFDocument class extends ReadableStream, this is the only usage
-
-### node:events
-
-- LineWrapper class extends EventEmitter, this is the only usage
 
 ## progress
 

@@ -1,5 +1,5 @@
 import { isUint8Array } from 'uint8array-extras';
-import { getObjects, parseTextStream } from '../helpers.js';
+import { getCMap, getObjects, parseTextStream } from '../helpers.js';
 
 /**
  * @import { TextStream, PDFDataObject } from '../helpers.js';
@@ -51,9 +51,10 @@ function textStreamMatches(expected, actual) {
 
 /**
  * @param {PDFDataObject} object
+ * @param {Map<string,string>} cMap
  * @return {TextStream | undefined}
  */
-function getTextStream(object) {
+function getTextStream(object, cMap = null) {
   // text stream objects have 4 items
   // first item is a string containing the Length of the stream
   // second item 'stream'
@@ -76,7 +77,7 @@ function getTextStream(object) {
     return;
   }
 
-  return parseTextStream(object.items[2]);
+  return parseTextStream(object.items[2], cMap);
 }
 
 export default {
@@ -91,8 +92,22 @@ export default {
     const foundTextStreams = [];
     let pass = false;
 
+    let cMap = null;
+    for (const data of objects) {
+      if (Array.isArray(data?.items)) {
+        for (const item of data.items) {
+          if (item instanceof Uint8Array) {
+            cMap = getCMap(item);
+            if (cMap !== null) {
+              break;
+            }
+          }
+        }
+      }
+    }
+
     for (const object of objects) {
-      const objectTextStream = getTextStream(object, textStream);
+      const objectTextStream = getTextStream(object, cMap);
       if (!objectTextStream) {
         continue;
       }
