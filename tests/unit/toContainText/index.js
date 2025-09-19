@@ -1,14 +1,14 @@
-import { isUint8Array } from 'uint8array-extras';
-import { getCMap, getObjects, parseTextStream } from '../helpers.js';
+import { isUint8Array, uint8ArrayToString } from 'uint8array-extras';
+import { getCMap, getObjects, parseTextStreams } from '../helpers.js';
 
 /**
  * @import { TextStream, PDFDataObject } from '../helpers.js';
- * @import JestMatchedUtils from 'jest-matcher-utils';
+ * @typedef {Partial<TextStream> & Pick<Required<TextStream>, 'text'>} TextStreamMatcher
  */
 
 /**
  * @param {JestMatchedUtils} utils
- * @param {TextStream} argument
+ * @param {TextStreamMatcher} argument
  * @return {string}
  */
 const passMessage = (utils, argument) => () => {
@@ -33,6 +33,19 @@ const failMessage = (utils, received, argument) => () => {
   );
 };
 
+// Compare position if provided, using Jest's toBeCloseTo-like logic
+const isNumber = (v) => typeof v === 'number' && Number.isFinite(v);
+const toBeClose = (received, expected, precision = 2) => {
+  if (!isNumber(received) || !isNumber(expected)) return false;
+  const tolerance = Math.pow(10, -precision) / 2;
+  return Math.abs(received - expected) < tolerance;
+};
+
+/**
+ * @param {TextStreamMatcher} expected
+ * @param {TextStream} actual
+ * @return {boolean}
+ */
 function textStreamMatches(expected, actual) {
   if (expected.text !== actual.text) {
     return false;
@@ -46,15 +59,32 @@ function textStreamMatches(expected, actual) {
     return false;
   }
 
+  if (isNumber(expected.x)) {
+    if (!toBeClose(actual.x, expected.x)) return false;
+  }
+
+  if (isNumber(expected.y)) {
+    if (!toBeClose(actual.y, expected.y)) return false;
+  }
+
   return true;
 }
 
 /**
- * @param {PDFDataObject} object
- * @param {Map<string,string>} cMap
- * @return {TextStream | undefined}
+ * @param {TextStreamMatcher} expected
+ * @param {TextStream[]} list
+ * @return {boolean}
  */
-function getTextStream(object, cMap = null) {
+function containsTextStream(expected, list) {
+  return list.some((actual) => textStreamMatches(expected, actual));
+}
+
+/**
+ * @param {PDFDataObject} object
+ * @param {Map<string,string>=} cMap
+ * @return {TextStream[] | undefined}
+ */
+function getTextStreams(object, cMap = null) {
   // text stream objects have 4 items
   // first item is a string containing the Length of the stream
   // second item 'stream'
@@ -77,25 +107,30 @@ function getTextStream(object, cMap = null) {
     return;
   }
 
-  return parseTextStream(object.items[2], cMap);
+  const decodedStream = uint8ArrayToString(object.items[2]);
+  return parseTextStreams(decodedStream, cMap);
 }
 
 export default {
   /**
    *
    * @param {(string | Uint8Array)[]} data
-   * @param {Partial<TextStream>} textStream
+   * @param {TextStreamMatcher} expected
    * @returns
    */
-  toContainText(data, textStream) {
+  toContainText(data, expected) {
     const objects = getObjects(data);
+    /**
+     * @type {TextStream[]}
+     */
     const foundTextStreams = [];
     let pass = false;
 
+    // Try to locate a CMap in any object stream
     let cMap = null;
-    for (const data of objects) {
-      if (Array.isArray(data?.items)) {
-        for (const item of data.items) {
+    for (const obj of objects) {
+      if (Array.isArray(obj?.items)) {
+        for (const item of obj.items) {
           if (item instanceof Uint8Array) {
             cMap = getCMap(item);
             if (cMap !== null) {
@@ -104,15 +139,19 @@ export default {
           }
         }
       }
+      if (cMap) break;
     }
 
     for (const object of objects) {
-      const objectTextStream = getTextStream(object, cMap);
-      if (!objectTextStream) {
+      const textStreamObjects = getTextStreams(object, cMap);
+      if (!textStreamObjects) {
         continue;
       }
-      foundTextStreams.push(objectTextStream);
-      if (textStreamMatches(textStream, objectTextStream)) {
+      foundTextStreams.push(...textStreamObjects);
+
+      console.log(textStreamObjects);
+
+      if (containsTextStream(expected, textStreamObjects)) {
         pass = true;
         break;
       }
@@ -121,13 +160,13 @@ export default {
     if (pass) {
       return {
         pass: true,
-        message: passMessage(this.utils, textStream),
+        message: passMessage(this.utils, expected),
       };
     }
 
     return {
       pass: false,
-      message: failMessage(this.utils, foundTextStreams, textStream),
+      message: failMessage(this.utils, foundTextStreams, expected),
     };
   },
 };

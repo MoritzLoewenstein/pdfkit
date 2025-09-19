@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
 
@@ -9,6 +10,7 @@ describe('List', () => {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
       compress: false,
     });
@@ -34,9 +36,9 @@ describe('List', () => {
 
       document.end();
 
-      expect(docData).toContainText({ text: 'item 4', x: 15 });
-      expect(docData).toContainText({ text: 'item 5', x: 15 });
-      expect(docData).toContainText({ text: 'item 6', x: 15 });
+      expect(docData).toContainText({ text: 'item 4', x: 21.667 });
+      expect(docData).toContainText({ text: 'item 5', x: 21.667 });
+      expect(docData).toContainText({ text: 'item 6', x: 21.667 });
     });
   });
 });
