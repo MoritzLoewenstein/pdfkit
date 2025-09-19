@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 
 describe('Image', function () {
@@ -8,6 +9,7 @@ describe('Image', function () {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
     });
   });

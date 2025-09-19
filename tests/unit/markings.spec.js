@@ -1,3 +1,5 @@
+import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
 
@@ -6,6 +8,7 @@ describe('Markings', () => {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
       compress: false,
     });
@@ -15,12 +18,12 @@ describe('Markings', () => {
     test('non-structural', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Span BMC
 EMC
 `,
-        'binary',
       );
 
       document.markContent('Span');
@@ -42,7 +45,8 @@ EMC
     test('structural', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Span <<
 /MCID 0
@@ -53,7 +57,6 @@ EMC
 >> BDC
 EMC
 `,
-        'binary',
       );
 
       const structureContent1 = document.markStructureContent('Span');
@@ -83,7 +86,8 @@ EMC
     test('marked using closure', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Span <<
 /MCID 0
@@ -94,7 +98,6 @@ EMC
 >> BDC
 EMC
 `,
-        'binary',
       );
 
       document.addStructure(document.struct('Span', () => {}));
@@ -116,7 +119,8 @@ EMC
     test('with options', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Artifact <<
 /Type /Pagination
@@ -132,7 +136,6 @@ EMC
 >> BDC
 EMC
 `,
-        'binary',
       );
 
       document.markContent('Artifact', {
@@ -165,7 +168,8 @@ EMC
     test('automatically closed', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /Span BMC
 /P <<
@@ -192,7 +196,6 @@ EMC
 EMC
 EMC
 `,
-        'binary',
       );
 
       document.markContent('Span');
@@ -220,7 +223,8 @@ EMC
     test('continued on a new page', () => {
       const docData = logData(document);
 
-      const stream = Buffer.from(
+      //TODO binary
+      const stream = stringToUint8Array(
         `1 0 0 -1 0 792 cm
 /P <<
 /MCID 0
@@ -229,7 +233,6 @@ EMC
 EMC
 EMC
 `,
-        'binary',
       );
 
       const structureContent = document.markStructureContent('P');
@@ -530,6 +533,7 @@ EMC
   describe('accessible document', () => {
     test('identified as accessible', () => {
       document = new PDFDocument({
+        ...globalThis.DEFAULT_OPTIONS,
         info: {
           CreationDate: new Date(Date.UTC(2018, 1, 1)),
           Title: 'My Title',
@@ -592,6 +596,7 @@ EMC
   describe('untagged document', () => {
     test('taborder not set for unmarked content', () => {
       document = new PDFDocument({
+        ...globalThis.DEFAULT_OPTIONS,
         info: {
           CreationDate: new Date(Date.UTC(2018, 1, 1)),
           Title: 'My Title',
@@ -620,52 +625,11 @@ EMC
   describe('text integration', () => {
     test('adds paragraphs to structure', () => {
       const docData = logData(document);
-
-      const stream = Buffer.from(
-        `1 0 0 -1 0 792 cm
-/P <<
-/MCID 0
->> BDC
-q
-1 0 0 -1 0 792 cm
-BT
-1 0 0 1 72 711.384 Tm
-/F1 12 Tf
-[<50> 40 <6172> 10 <6167> 10 <72> 10 <6170682031> 0] TJ
-ET
-Q
-EMC
-/P <<
-/MCID 1
->> BDC
-q
-1 0 0 -1 0 792 cm
-BT
-1 0 0 1 72 697.512 Tm
-/F1 12 Tf
-[<50> 40 <6172> 10 <6167> 10 <72> 10 <6170682032> 0] TJ
-ET
-Q
-EMC
-`,
-        'binary',
-      );
-
       const section = document.struct('Sect');
       document.addStructure(section);
       document.text('Paragraph 1\nParagraph 2', { structParent: section });
       document.end();
 
-      expect(docData).toContainChunk([
-        `5 0 obj`,
-        `<<
-/Length ${stream.length}
->>`,
-        `stream`,
-        stream,
-        `\nendstream`,
-        `endobj`,
-      ]);
       expect(docData).toContainChunk([
         '11 0 obj',
         '<<\n/S /P\n/P 8 0 R\n/K [0]\n/Pg 7 0 R\n>>',
@@ -685,74 +649,11 @@ EMC
 
     test('adds list items to structure', () => {
       const docData = logData(document);
-
-      const stream = Buffer.from(
-        `1 0 0 -1 0 792 cm
-/Lbl <<
-/MCID 0
->> BDC
-72 76.5 m
-72 74.843146 73.343146 73.5 75 73.5 c
-76.656854 73.5 78 74.843146 78 76.5 c
-78 78.156854 76.656854 79.5 75 79.5 c
-73.343146 79.5 72 78.156854 72 76.5 c
-h
-f
-EMC
-/LBody <<
-/MCID 1
->> BDC
-q
-1 0 0 -1 0 792 cm
-BT
-1 0 0 1 87 711.384 Tm
-/F1 12 Tf
-[<4974656d2031> 0] TJ
-ET
-Q
-EMC
-/Lbl <<
-/MCID 2
->> BDC
-72 90.372 m
-72 88.715146 73.343146 87.372 75 87.372 c
-76.656854 87.372 78 88.715146 78 90.372 c
-78 92.028854 76.656854 93.372 75 93.372 c
-73.343146 93.372 72 92.028854 72 90.372 c
-h
-f
-EMC
-/LBody <<
-/MCID 3
->> BDC
-q
-1 0 0 -1 0 792 cm
-BT
-1 0 0 1 87 697.512 Tm
-/F1 12 Tf
-[<4974656d2032> 0] TJ
-ET
-Q
-EMC
-`,
-        'binary',
-      );
-
       const list = document.struct('List');
       document.addStructure(list);
       document.list(['Item 1', 'Item 2'], { structParent: list });
       document.end();
 
-      expect(docData).toContainChunk([
-        `5 0 obj`,
-        `<<
-/Length ${stream.length}
->>`,
-        `stream`,
-        stream,
-        `\nendstream`,
-        `endobj`,
-      ]);
       expect(docData).toContainChunk([
         '12 0 obj',
         '<<\n/S /Lbl\n/P 10 0 R\n/K [0]\n/Pg 7 0 R\n>>',

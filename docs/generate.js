@@ -127,7 +127,7 @@ class Node {
         this.type = `h${this.attrs.level}`;
         break;
 
-      case 'code_block':
+      case 'code_block': {
         // use code mirror to syntax highlight the code block
         var code = this.content[0].text;
         this.content = [];
@@ -146,6 +146,7 @@ class Node {
         }
         codeBlocks.push(code);
         break;
+      }
 
       case 'img':
         // images are used to generate inline example output
@@ -195,7 +196,7 @@ class Node {
       continued = false;
     }
     switch (this.type) {
-      case 'example':
+      case 'example': {
         this.setStyle(doc);
 
         // translate all points in the example code to
@@ -229,6 +230,7 @@ class Node {
         doc.page.height = docPageHeight;
         doc.page.margins = docPageMargins;
         break;
+      }
       case 'hr':
         doc.addPage();
         break;

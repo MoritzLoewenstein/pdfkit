@@ -1,46 +1,45 @@
+import { uint8ArrayToString } from 'uint8array-extras';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PDFFontFactory from '../../lib/font_factory';
 import { logData } from './helpers';
 
 describe('EmbeddedFont', () => {
   test('no fontLayoutCache option', () => {
-    const document = new PDFDocument();
-    const font = PDFFontFactory.open(
-      document,
-      'tests/fonts/Roboto-Regular.ttf',
-    );
-    const runSpy = jest.spyOn(font, 'layoutRun');
+    const document = new PDFDocument(globalThis.DEFAULT_OPTIONS);
+    const font = PDFFontFactory.open(document, globalThis.ROBOTO_DATA);
+    const runSpy = vi.spyOn(font, 'layoutRun');
 
     font.layout('test');
     font.layout('test');
     font.layout('test');
     font.layout('test');
 
-    expect(runSpy).toBeCalledTimes(1);
+    expect(runSpy).toHaveBeenCalledTimes(1);
   });
 
   test('fontLayoutCache = false', () => {
-    const document = new PDFDocument({ fontLayoutCache: false });
-    const font = PDFFontFactory.open(
-      document,
-      'tests/fonts/Roboto-Regular.ttf',
-    );
-    const runSpy = jest.spyOn(font, 'layoutRun');
+    const document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
+      fontLayoutCache: false,
+    });
+    const font = PDFFontFactory.open(document, globalThis.ROBOTO_DATA);
+    const runSpy = vi.spyOn(font, 'layoutRun');
 
     font.layout('test');
     font.layout('test');
     font.layout('test');
     font.layout('test');
 
-    expect(runSpy).toBeCalledTimes(4);
+    expect(runSpy).toHaveBeenCalledTimes(4);
   });
 
-  describe('emebed', () => {
+  describe('embed', () => {
     test('sets BaseName based on font id and postscript name', () => {
-      const document = new PDFDocument();
+      const document = new PDFDocument(globalThis.DEFAULT_OPTIONS);
       const font = PDFFontFactory.open(
         document,
-        'tests/fonts/Roboto-Regular.ttf',
+        globalThis.ROBOTO_DATA,
         undefined,
         'F1099',
       );
@@ -56,10 +55,13 @@ describe('EmbeddedFont', () => {
 
   describe('toUnicodeMap', () => {
     test('bfrange lines should not cross highcode boundary', () => {
-      const doc = new PDFDocument({ compress: false });
+      const doc = new PDFDocument({
+        ...globalThis.DEFAULT_OPTIONS,
+        compress: false,
+      });
       const font = PDFFontFactory.open(
         doc,
-        'tests/fonts/Roboto-Regular.ttf',
+        globalThis.ROBOTO_DATA,
         undefined,
         'F1099',
       );
@@ -80,7 +82,7 @@ describe('EmbeddedFont', () => {
 
       const docData = logData(doc);
       font.toUnicodeCmap();
-      const text = docData.map((d) => d.toString('utf8')).join('');
+      const text = uint8ArrayToString(docData[3]);
 
       let glyphs = 0;
       for (const block of text.matchAll(
@@ -106,6 +108,7 @@ describe('sizeToPoint', () => {
   beforeEach(() => {
     doc = new PDFDocument({
       font: 'Helvetica',
+      fontData: globalThis.HELVETICA_OPTIONS.fontData,
       fontSize: 12,
       size: [250, 500],
       margin: { top: 10, right: 5, bottom: 10, left: 5 },
@@ -123,8 +126,8 @@ describe('sizeToPoint', () => {
     ['1cm', 28.3465],
     ['1mm', 2.8346],
     ['1pc', 12],
-    ['1ex', 11.1],
-    ['1ch', 6.672],
+    ['1ex', 12],
+    ['1ch', 6.6738],
     ['1vw', 2.5],
     ['1vh', 5],
     ['1vmin', 2.5],

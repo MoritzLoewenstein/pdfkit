@@ -1,9 +1,10 @@
+import { describe, expect, inject, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
 
 describe('color', function () {
   test('normalize', function () {
-    const doc = new PDFDocument();
+    const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
     expect(doc._normalizeColor('#FFF')).toEqual([1, 1, 1]);
     expect(doc._normalizeColor('#FFFFFF')).toEqual([1, 1, 1]);
@@ -28,7 +29,7 @@ describe('color', function () {
   });
 
   test('normalize with spot color', function () {
-    const doc = new PDFDocument();
+    const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
     doc.addSpotColor('PANTONE 123 C', 0.1, 0.2, 0.3, 0.4);
 
     const color = doc._normalizeColor('PANTONE 123 C');
@@ -37,7 +38,7 @@ describe('color', function () {
   });
 
   test('spot color', function () {
-    const doc = new PDFDocument();
+    const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
     const data = logData(doc);
     doc.addSpotColor('PANTONE185C', 0, 100, 78, 9);
     doc.fillColor('PANTONE185C').text('This text uses spot color!');

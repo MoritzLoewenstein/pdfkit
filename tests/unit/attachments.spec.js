@@ -1,11 +1,13 @@
+import { createHash } from 'node:crypto';
+import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PDFSecurity from '../../lib/security';
 import { logData } from './helpers';
-import { createHash } from 'crypto';
 
 // manual mock for PDFSecurity to ensure stored id will be the same across different systems
 PDFSecurity.generateFileID = () => {
-  return Buffer.from('mocked-pdf-id');
+  return stringToUint8Array('mocked-pdf-id');
 };
 
 const date = new Date(Date.UTC(2018, 1, 1));
@@ -15,6 +17,7 @@ describe('file', () => {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: date },
     });
   });
@@ -22,7 +25,7 @@ describe('file', () => {
   test('with name and type', () => {
     const docData = logData(document);
 
-    document.file(Buffer.from('example text'), {
+    document.file(stringToUint8Array('example text'), {
       name: 'file.txt',
       type: 'text/plain',
       creationDate: date,
@@ -80,7 +83,7 @@ describe('file', () => {
   test('with description', () => {
     const docData = logData(document);
 
-    document.file(Buffer.from('example text'), {
+    document.file(stringToUint8Array('example text'), {
       name: 'file.txt',
       creationDate: date,
       modifiedDate: date,
@@ -123,7 +126,7 @@ describe('file', () => {
   test('with hidden option', () => {
     const docData = logData(document);
 
-    document.file(Buffer.from('example text'), {
+    document.file(stringToUint8Array('example text'), {
       name: 'file.txt',
       creationDate: date,
       modifiedDate: date,
@@ -163,12 +166,12 @@ describe('file', () => {
   test('attach multiple files', () => {
     const docData = logData(document);
 
-    document.file(Buffer.from('example text'), {
+    document.file(stringToUint8Array('example text'), {
       name: 'file1.txt',
       creationDate: date,
       modifiedDate: date,
     });
-    document.file(Buffer.from('example text'), {
+    document.file(stringToUint8Array('example text'), {
       name: 'file2.txt',
       creationDate: date,
       modifiedDate: date,
@@ -195,12 +198,12 @@ describe('file', () => {
   test('attach the same file multiple times', () => {
     const docData = logData(document);
 
-    document.file(Buffer.from('example text'), {
+    document.file(stringToUint8Array('example text'), {
       name: 'file1.txt',
       creationDate: date,
       modifiedDate: date,
     });
-    document.file(Buffer.from('example text'), {
+    document.file(stringToUint8Array('example text'), {
       name: 'file1.txt',
       creationDate: new Date(date),
       modifiedDate: new Date(date),

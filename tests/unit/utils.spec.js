@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { normalizeSides, PDFNumber } from '../../lib/utils';
 
 describe('normalizeSides', () => {

@@ -1,8 +1,10 @@
+import { describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 
 describe('page', function () {
   test('cascade page options', function () {
     const doc = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       autoFirstPage: false,
       bufferPages: true,
     });

@@ -1,10 +1,12 @@
+import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PDFSecurity from '../../lib/security';
 import { logData } from './helpers';
 
 // manual mock for PDFSecurity to ensure stored id will be the same accross different systems
 PDFSecurity.generateFileID = () => {
-  return Buffer.from('mocked-pdf-id');
+  return stringToUint8Array('mocked-pdf-id');
 };
 
 describe('Document trailer', () => {
@@ -12,6 +14,7 @@ describe('Document trailer', () => {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
     });
   });

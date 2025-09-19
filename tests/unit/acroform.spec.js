@@ -1,11 +1,13 @@
+import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
-import PDFSecurity from '../../lib/security';
-import { logData, joinTokens } from './helpers';
 import PDFFontFactory from '../../lib/font_factory';
+import PDFSecurity from '../../lib/security';
+import { joinTokens, logData } from './helpers';
 
 // manual mock for PDFSecurity to ensure stored id will be the same accross different systems
 PDFSecurity.generateFileID = () => {
-  return Buffer.from('mocked-pdf-id');
+  return stringToUint8Array('mocked-pdf-id');
 };
 
 describe('acroform', () => {
@@ -13,6 +15,7 @@ describe('acroform', () => {
 
   beforeEach(() => {
     doc = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
     });
   });
@@ -98,7 +101,7 @@ describe('acroform', () => {
     ];
 
     const docData = logData(doc);
-    doc.registerFont('myfont1', 'tests/fonts/Roboto-Regular.ttf');
+    doc.registerFont('myfont1', globalThis.ROBOTO_DATA);
 
     doc.font('Courier-Bold'); // establishes the default font
     doc.initForm();
@@ -214,6 +217,7 @@ describe('acroform', () => {
 
   test('false flags should be ignored', () => {
     const expectedDoc = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
     });
     expectedDoc.initForm();
@@ -262,7 +266,7 @@ describe('acroform', () => {
         '>>',
       'endobj',
     ];
-    doc.registerFont('myfont1', 'tests/fonts/Roboto-Regular.ttf');
+    doc.registerFont('myfont1', globalThis.ROBOTO_DATA);
     doc.initForm();
     const docData = logData(doc);
     let opts = {

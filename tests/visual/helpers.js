@@ -1,3 +1,4 @@
+import { concatUint8Arrays } from 'uint8array-extras';
 import PDFDocument from '../../lib/document';
 import { pdf2png } from './pdf2png.js';
 
@@ -9,6 +10,11 @@ function runDocTest(options, fn) {
   if (!options.info) {
     options.info = {};
   }
+
+  options = {
+    ...globalThis.DEFAULT_OPTIONS,
+    ...options,
+  };
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument(options);
@@ -22,7 +28,7 @@ function runDocTest(options, fn) {
         doc.on('data', buffers.push.bind(buffers));
         doc.on('end', async () => {
           try {
-            const pdfData = Buffer.concat(buffers);
+            const pdfData = concatUint8Arrays(buffers);
             const { systemFonts = false } = options;
             const images = await pdf2png(pdfData, { systemFonts });
             for (let image of images) {

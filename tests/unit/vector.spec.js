@@ -1,3 +1,5 @@
+import { stringToUint8Array } from 'uint8array-extras';
+import { beforeEach, describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
 
@@ -6,6 +8,7 @@ describe('Vector Graphics', () => {
 
   beforeEach(() => {
     document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
       compress: false,
     });
@@ -14,9 +17,9 @@ describe('Vector Graphics', () => {
   describe('dash', () => {
     test('with numeric length argument', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
+      //TODO binary
+      const vectorStream = stringToUint8Array(
         '1 0 0 -1 0 792 cm\n50 20 m\n[2 2] 0 d\nS\n',
-        'binary',
       );
 
       document.moveTo(50, 20).dash(2).stroke();
@@ -36,9 +39,9 @@ describe('Vector Graphics', () => {
 
     test('with array length argument', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
+      //TODO binary
+      const vectorStream = stringToUint8Array(
         '1 0 0 -1 0 792 cm\n50 20 m\n[1 2] 0 d\nS\n',
-        'binary',
       );
 
       document.moveTo(50, 20).dash([1, 2]).stroke();
@@ -58,9 +61,9 @@ describe('Vector Graphics', () => {
 
     test('with space option', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
+      //TODO binary
+      const vectorStream = stringToUint8Array(
         '1 0 0 -1 0 792 cm\n50 20 m\n[2 10] 0 d\nS\n',
-        'binary',
       );
 
       document.moveTo(50, 20).dash(2, { space: 10 }).stroke();
@@ -80,9 +83,9 @@ describe('Vector Graphics', () => {
 
     test('with phase option', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
+      //TODO binary
+      const vectorStream = stringToUint8Array(
         '1 0 0 -1 0 792 cm\n50 20 m\n[2 2] 8 d\nS\n',
-        'binary',
       );
 
       document.moveTo(50, 20).dash(2, { phase: 8 }).stroke();
@@ -102,19 +105,19 @@ describe('Vector Graphics', () => {
 
     describe('validation', () => {
       test('length 1', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(1)).not.toThrow();
       });
 
       test('length 1.5', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(1.5)).not.toThrow();
       });
 
       test('length 0 throws', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(0)).toThrow(
           'dash(0, {}) invalid, lengths must be numeric and greater than zero',
@@ -122,7 +125,7 @@ describe('Vector Graphics', () => {
       });
 
       test('length -1 throws', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(-1)).toThrow(
           'dash(-1, {}) invalid, lengths must be numeric and greater than zero',
@@ -130,7 +133,7 @@ describe('Vector Graphics', () => {
       });
 
       test('length null throws', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash(null)).toThrow(
           'dash(null, {}) invalid, lengths must be numeric and greater than zero',
@@ -138,13 +141,13 @@ describe('Vector Graphics', () => {
       });
 
       test('length array', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash([2, 3])).not.toThrow();
       });
 
       test('length array containing zeros throws', () => {
-        const doc = new PDFDocument();
+        const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
 
         expect(() => doc.dash([2, 0, 3])).toThrow(
           'dash([2,0,3], {}) invalid, lengths must be numeric and greater than zero',
@@ -156,9 +159,9 @@ describe('Vector Graphics', () => {
   describe('translate', () => {
     test('identity transform is ignored', () => {
       const docData = logData(document);
-      const vectorStream = Buffer.from(
+      //TODO binary
+      const vectorStream = stringToUint8Array(
         `1 0 0 -1 0 792 cm\n1 0 0 1 0 0 cm\n`,
-        'binary',
       );
 
       document.translate(0, 0);

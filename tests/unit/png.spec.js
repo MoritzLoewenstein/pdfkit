@@ -1,7 +1,8 @@
+import fs from 'node:fs';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import PDFDocument from '../../lib/document';
-import PDFReference from '../../lib/reference';
 import PNGImage from '../../lib/image/png';
-import fs from 'fs';
+import PDFReference from '../../lib/reference';
 
 describe('PNGImage', () => {
   let document;
@@ -25,13 +26,13 @@ describe('PNGImage', () => {
       img.finalize();
     };
     const finalizeFn = img.finalize;
-    jest.spyOn(img, 'finalize').mockImplementation(() => finalizeFn.call(img));
+    vi.spyOn(img, 'finalize').mockImplementation(() => finalizeFn.call(img));
     img.embed(document);
     return img;
   };
 
   beforeEach(() => {
-    document = new PDFDocument();
+    document = new PDFDocument(globalThis.DEFAULT_OPTIONS);
   });
 
   test('RGB', () => {
@@ -45,7 +46,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./examples/images/test2.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -80,7 +81,7 @@ describe('PNGImage', () => {
       './tests/images/pngsuite-rgb-transparent-white.png',
     );
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 16,
@@ -114,7 +115,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./tests/images/bee.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -152,7 +153,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./tests/images/straight.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -190,7 +191,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./examples/images/test3.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -225,7 +226,7 @@ describe('PNGImage', () => {
       './tests/images/pngsuite-palette-transparent-white.png',
     );
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -271,7 +272,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./tests/images/glassware-noisy.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -299,7 +300,7 @@ describe('PNGImage', () => {
       './tests/images/pngsuite-gray-transparent-black.png',
     );
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 4,
@@ -335,7 +336,7 @@ describe('PNGImage', () => {
       './tests/images/pngsuite-gray-transparent-white.png',
     );
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 16,
@@ -369,7 +370,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./tests/images/fish.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -407,7 +408,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./tests/images/interlaced-grayscale-8bit.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -440,7 +441,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./tests/images/interlaced-pallete-8bit.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -473,7 +474,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./tests/images/interlaced-rgb-8bit.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
@@ -506,7 +507,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./tests/images/interlaced-rgb-16bit.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 16,
@@ -539,7 +540,7 @@ describe('PNGImage', () => {
 
     const img = createImage('./tests/images/interlaced-rgb-alpha-8bit.png');
 
-    expect(img.finalize).toBeCalledTimes(1);
+    expect(img.finalize).toHaveBeenCalledTimes(1);
 
     expect(img.obj.data).toMatchObject({
       BitsPerComponent: 8,
