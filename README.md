@@ -1,7 +1,6 @@
 ## Note
 
 This is a personal wip fork of the [pdfkit project](https://github.com/foliojs/pdfkit). Dont expect a working library (yet).
-. Dont expect a working library (yet).
 
 # PDFKit
 
