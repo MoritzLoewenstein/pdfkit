@@ -149,8 +149,6 @@ export default {
       }
       foundTextStreams.push(...textStreamObjects);
 
-      console.log(textStreamObjects);
-
       if (containsTextStream(expected, textStreamObjects)) {
         pass = true;
         break;
