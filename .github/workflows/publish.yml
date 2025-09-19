@@ -11,23 +11,21 @@ concurrency:
   group: publish-main
   cancel-in-progress: false
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   publish:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
     steps:
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v5
         with:
-          node-version-file: package.json
-          cache: 'npm'
+          node-version: 22.x
           registry-url: 'https://registry.npmjs.org'
-          always-auth: true
 
       - name: Installs Deps & Build
         run: |
@@ -35,4 +33,4 @@ jobs:
           npm ci
           npm run build
 
-      - run: npm publish --tag latest --access public --provenance
+      - run: npm publish --tag latest
