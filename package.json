@@ -1,5 +1,5 @@
 {
-  "name": "pdfkit",
+  "name": "@moritzloewenstein/pdfkit",
   "type": "module",
   "description": "A PDF generation library",
   "keywords": [
@@ -70,5 +70,8 @@
       "import": "./dist/pdfkit.js",
       "require": "./dist/pdfkit.umd.js"
     }
+  },
+  "volta": {
+    "node": "22.19.0"
   }
 }
