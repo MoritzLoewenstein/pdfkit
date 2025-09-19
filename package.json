@@ -45,7 +45,6 @@
     "uint8array-extras": "^1.5.0"
   },
   "scripts": {
-    "prepublishOnly": "npm run build",
     "dev": "vite",
     "build": "vite build",
     "build:watch": "vite build --watch",
@@ -70,6 +69,11 @@
       "import": "./dist/pdfkit.js",
       "require": "./dist/pdfkit.umd.js"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "registry": "https://registry.npmjs.org/"
   },
   "volta": {
     "node": "22.19.0"

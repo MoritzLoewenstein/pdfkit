@@ -35,4 +35,4 @@ jobs:
           npm ci
           npm run build
 
-      - run: npm publish --tag latest
+      - run: npm publish --tag latest --access public --provenance
