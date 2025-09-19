@@ -60,12 +60,8 @@
     "test:snapshot-update": "vitest -u",
     "test:coverage": "vitest run --coverage"
   },
-  "engine": [
-    "node >= v20.0.0"
-  ],
-  "files": [
-    "dist"
-  ],
+  "engine": ["node >= v20.0.0"],
+  "files": ["dist"],
   "main": "./dist/pdfkit.umd.cjs",
   "module": "./dist/pdfkit.js",
   "exports": {
