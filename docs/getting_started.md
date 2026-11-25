@@ -52,6 +52,9 @@ its data as `font` and `fontData`; see [Fonts](text.md#fonts).
 
 ## Document options
 
+New documents default to PDF 1.7. PDF/A-1 documents default to PDF 1.4.
+Set `pdfVersion` explicitly if the recipient requires an older version.
+
 Set `pageLayout` to control how a PDF viewer displays pages: `singlePage`,
 `oneColumn`, `twoColumnLeft`, `twoColumnRight`, `twoPageLeft`, or `twoPageRight`.
 In the two-column and two-page layouts, `Left` and `Right` indicate which side
@@ -207,10 +210,11 @@ capitalized.
 
 ## Encryption and Access Privileges
 
-PDF specification allow you to encrypt the PDF file and require a password when opening the file,
-and/or set permissions of what users can do with the PDF file. PDFKit implements standard security
-handler in PDF version 1.3 (40-bit RC4), version 1.4 (128-bit RC4), PDF version 1.7 (128-bit AES),
-and PDF version 1.7 ExtensionLevel 3 (256-bit AES).
+To encrypt a PDF or set access permissions, explicitly set `pdfVersion: '1.7ext3'`
+(PDF 1.7 Extension Level 3, AES-256 revision 5). Supplying a non-empty user or
+owner password with any other version, including the default PDF 1.7, throws an
+error. Older versions remain available for unencrypted output. PDF/A does not
+allow encryption.
 
 To enable encryption, provide a user password when creating the `PDFDocument` in `options` object.
 The PDF file will be encrypted when a user password is provided, and users will be prompted to enter
@@ -253,22 +257,7 @@ Note that PDF file itself cannot enforce access privileges.
 When file is decrypted, PDF viewer applications have full access to the file content,
 and it is up to viewer applications to respect permission settings.
 
-To choose encryption method, you need to specify PDF version.
-PDFKit will choose best encryption method available in the PDF version you specified.
-
-- `pdfVersion` - a string value specifying PDF file version
-
-Available options includes:
-
-- `1.3` - PDF version 1.3 (default), 40-bit RC4 is used
-- `1.4` - PDF version 1.4, 128-bit RC4 is used
-- `1.5` - PDF version 1.5, 128-bit RC4 is used
-- `1.6` - PDF version 1.6, 128-bit AES is used
-- `1.7` - PDF version 1.7, 128-bit AES is used
-- `1.7ext3` - PDF version 1.7 ExtensionLevel 3, 256-bit AES is used
-
-When using PDF version 1.7 ExtensionLevel 3, password is truncated to 127 bytes of its UTF-8 representation.
-In older versions, password is truncated to 32 bytes, and only Latin-1 characters are allowed.
+Passwords are truncated to 127 bytes of their UTF-8 representation.
 
 ## PDF/A
 
@@ -289,12 +278,8 @@ In order to create PDF/A documents, set `subset` to either `PDF/A-1` or `PDF/A-1
 
 Similary, use `PDF/A-2` or `PDF/A-2b` for PDF/A-2 level B conformance and `PDF/A-2a` for PDF/A-2 level A conformance. `PDF/A-3` or `PDF/A-3b` can be used for PDF/A-3 level B conformance and `PDF/A-3a` for PDF/A-3 level A conformance.
 
-Futhermore, you will need to specify the other options relevant to the PDF/A subset you wish to use, for PDF/A-1 being:
-
-- `pdfVersion` set to at least `1.4`
-- `tagged` set to `true` for PDF/A-1a
-
-For PDF/A-2 and PDF/A-3, the `pdfVersion` needs to be set to at least `1.7` and `tagged` needs to be `true` for level A conformance.
+PDF/A-1 defaults to PDF 1.4. PDF/A-2 and PDF/A-3 use the ordinary PDF 1.7
+default. Set `tagged: true` for level A conformance.
 
 In order to verify the generated document for PDF/A and its subsets conformance, veraPDF is an excellent open source validator.
 

@@ -4,6 +4,8 @@
 
 - Port upstream PDFKit fixes through November 24, 2026, while retaining the fork's Vite build, embedded-font defaults, and Web Streams output.
 - Restore PNG and JPEG embedding, attachments, compression, and password protection without Node.js polyfills. Add object streams, page labels and layout, outline destinations, `onPageAdded`, and named output helpers.
+- Remove RC4-based password protection. Password options require explicit `pdfVersion: '1.7ext3'`; older versions remain available without encryption.
+- Default to PDF 1.7 for ordinary documents and PDF 1.4 for PDF/A-1.
 - Improve text wrapping, spacing and decorations, font subsetting, tagged links and tables, form fields, SVG paths, and PDF/A metadata. Add repeating table headers and image placement options.
 
 ### [v0.17.1] - 2025-05-02

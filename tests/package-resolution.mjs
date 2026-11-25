@@ -22,4 +22,4 @@ doc.text('Package smoke test');
 doc.end();
 const bytes = await toBytes(doc);
 assert(bytes instanceof Uint8Array);
-assert.match(new TextDecoder().decode(bytes), /^%PDF-1\.3\n[\s\S]*%%EOF\n$/);
+assert.match(new TextDecoder().decode(bytes), /^%PDF-1\.7\n[\s\S]*%%EOF\n$/);

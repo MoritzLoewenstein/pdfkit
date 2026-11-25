@@ -1,9 +1,23 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
-import PDFDocument from '../../lib/document';
+import PDFDocument, { toBytes } from '../../lib/document';
 import { joinTokens, logData, uint8ArrayStringify } from './helpers';
 
 describe('PDF/A-1', () => {
+  test.each(['PDF/A-1', 'PDF/A-1a', 'PDF/A-1b'])(
+    '%s defaults to PDF 1.4',
+    async (subset) => {
+      const doc = new PDFDocument({
+        ...globalThis.DEFAULT_OPTIONS,
+        subset,
+        tagged: subset === 'PDF/A-1a',
+      });
+      doc.end();
+      const bytes = await toBytes(doc);
+      expect(new TextDecoder().decode(bytes.subarray(0, 9))).toBe('%PDF-1.4\n');
+    },
+  );
+
   test('metadata is present', () => {
     let doc = new PDFDocument({
       ...globalThis.DEFAULT_OPTIONS,

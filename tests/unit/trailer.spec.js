@@ -31,7 +31,7 @@ describe('Document trailer', () => {
     expect(docData).toContainChunk(['11 0 obj', '(D:20180201000000Z)']);
     expect(docData).toContainChunk([
       'trailer',
-      `<<\n/Size 12\n/Root 3 0 R\n/Info 8 0 R\n/ID [<6d6f636b65642d7064662d6964> <6d6f636b65642d7064662d6964>]\n>>`,
+      `<<\n/Size 13\n/Root 3 0 R\n/Info 8 0 R\n/ID [<6d6f636b65642d7064662d6964> <6d6f636b65642d7064662d6964>]\n>>`,
     ]);
   });
 
