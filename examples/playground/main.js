@@ -1,9 +1,9 @@
 import { javascript } from '@codemirror/lang-javascript';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { basicSetup, EditorView } from 'codemirror';
-import { loadFonts } from '../../examples_2/browser_fonts.js';
-import { lorem } from '../../examples_2/simple_pdf.js';
 import { PDFDocument, toBlob } from '../../lib/document.js';
+import { loadFonts } from '../quickstart/browser_fonts.js';
+import { lorem } from '../quickstart/simple_pdf.js';
 import { example } from './example.js';
 import './style.css';
 

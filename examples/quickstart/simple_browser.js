@@ -1,4 +1,4 @@
-import { PDFDocument, toBlob } from '../lib/document.js';
+import { PDFDocument, toBlob } from '../../lib/document.js';
 import { loadFonts } from './browser_fonts.js';
 import { makeSimplePdf } from './simple_pdf.js';
 

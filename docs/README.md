@@ -37,5 +37,17 @@ for untrusted code.
   new PDF page unless they follow a heading or explicit page break. A
   horizontal rule (`* * *` or `---`) inserts a PDF page break.
 
-Publishing is separate from generation and is not required to preview the docs.
-The publish script requires an explicit destination repository URL.
+## GitHub Pages
+
+The [Pages workflow](../.github/workflows/pages.yml) builds and deploys the site
+from `main`. The playground is served at `/` and the documentation at
+`/docs/index.html`. To build the same static site locally, run `npm run docs`
+before `npm run playground:build`; the output is in `dist-playground/`.
+
+To set up the public site, select **GitHub Actions** as the source in
+**Settings → Pages**. Set the custom domain to `pdfkit.moritzloewenstein.com`
+and add a DNS CNAME for `pdfkit` pointing to `moritzloewenstein.github.io`.
+Enable **Enforce HTTPS** once GitHub provisions the certificate.
+
+The separate `npm run publish-website` command publishes only the documentation
+to a `gh-pages` branch and requires an explicit destination repository URL.

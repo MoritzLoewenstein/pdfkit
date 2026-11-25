@@ -1,0 +1,55 @@
+name: Publish to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - uses: actions/configure-pages@v6.0.0
+
+      - run: npm ci
+
+      - name: Build the docs and playground
+        run: |
+          npm run docs
+          # Vite copies public/docs into dist-playground/docs.
+          npm run playground:build
+          test -s dist-playground/docs/index.html
+
+      - uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: dist-playground
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v5.0.1
+        id: deployment

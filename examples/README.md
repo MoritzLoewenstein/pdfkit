@@ -2,10 +2,14 @@
 
 Install dependencies and run `npm run build` from the repository root before
 running the Node examples. They import the built package by name. For example,
-`node examples/png.js` writes `png.pdf` to your current directory. The other
-scripts in this directory work the same way; run them from a scratch directory
-to keep the checked-in PDFs untouched. `tiger.js` is an SVG path fixture, not a
-standalone generator.
+`node examples/png.js` writes `png.pdf` to your current directory. Run the
+top-level feature examples from a scratch directory to keep the checked-in PDFs
+untouched. `tiger.js` is an SVG path fixture, not a standalone generator.
+
+For the same small PDF in different environments, see [`quickstart/`](quickstart/).
+From the repository root, run `node examples/quickstart/simple_node.js` to collect
+the PDF as bytes or `node examples/quickstart/simple_node_stream.js` to stream it
+to a file. Both write their output in `examples/quickstart/`.
 
 Run `npm run dev` and open the root page for the editable playground, or choose
 **Fixed preview** for the non-editable browser example. Edit the first call to

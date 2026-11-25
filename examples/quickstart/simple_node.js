@@ -3,10 +3,10 @@ import { PDFDocument, toBytes } from '@moritzloewenstein/pdfkit';
 import { makeSimplePdf } from './simple_pdf.js';
 
 const robotoMonoData = readFileSync(
-  new URL('../public/fonts/RobotoMono-Regular.ttf', import.meta.url),
+  new URL('../../public/fonts/RobotoMono-Regular.ttf', import.meta.url),
 );
 const robotoMonoItalicData = readFileSync(
-  new URL('../public/fonts/RobotoMono-Italic.ttf', import.meta.url),
+  new URL('../../public/fonts/RobotoMono-Italic.ttf', import.meta.url),
 );
 const FONT_DEFAULT = 'RobotoMono';
 const FONT_ITALIC = 'RobotoMonoItalic';
@@ -18,4 +18,4 @@ const doc = new PDFDocument({
 doc.registerFont(FONT_ITALIC, robotoMonoItalicData);
 const output = toBytes(doc);
 makeSimplePdf(doc, FONT_ITALIC);
-writeFileSync('examples_2/simple_node.pdf', await output);
+writeFileSync('examples/quickstart/simple_node.pdf', await output);

@@ -17,7 +17,7 @@ pdfkit is organized in the following folders:
 - `lib`: The actual source code.
 - `dist`: The Vite-built package. Run `npm run build` to generate it.
 - `docs`: Code and artifacts to generate documentation.
-- `examples` and `examples_2`: Node and browser examples.
+- `examples`: Feature examples, a Node and browser quickstart, and the editable playground.
 - `tests/unit`: Tests behavior of specific classes / methods.
 - `tests/visual`: Compare the pdf output against a reference.
 

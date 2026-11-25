@@ -5,5 +5,5 @@ dist-playground/
 public/docs/
 .amp/portals/*
 
-examples_2/simple_node.pdf
-examples_2/simple_node_stream.pdf
+examples/quickstart/simple_node.pdf
+examples/quickstart/simple_node_stream.pdf
