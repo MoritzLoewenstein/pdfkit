@@ -18,8 +18,20 @@ describe('file', () => {
   beforeEach(() => {
     document = new PDFDocument({
       ...globalThis.DEFAULT_OPTIONS,
+      compress: true,
       info: { CreationDate: date },
     });
+  });
+
+  test('reuses an in-memory attachment without timestamps', () => {
+    const data = stringToUint8Array('example text');
+    const first = document.file(data, { name: 'file.txt' });
+    const second = document.file(data, { name: 'file.txt' });
+    const dated = document.file(data, { name: 'file.txt', modifiedDate: date });
+    expect(second.data.EF.F).toBe(first.data.EF.F);
+    expect(dated.data.EF.F).not.toBe(first.data.EF.F);
+    expect(() => document.addNamedEmbeddedFile('missing')).toThrow('No ref');
+    document.end();
   });
 
   test('with name and type', () => {

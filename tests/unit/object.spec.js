@@ -16,9 +16,15 @@ describe('PDFObject', () => {
     });
 
     test('String object with unicode', () => {
-      const result = PDFObject.convert(new String('αβγδ'));
-      expect(result.length).toEqual(12);
-      expect(result).toMatchInlineSnapshot(`"(þÿ±²³´)"`);
+      expect(PDFObject.convert(new String('α😀'))).toBe('<feff03b1d83dde00>');
+    });
+
+    test('omits undefined dictionary entries without shifting array positions', () => {
+      const sparse = [10];
+      sparse[2] = 30;
+      expect(
+        PDFObject.convert({ Omit: undefined, Null: null, Rect: sparse }),
+      ).toBe('<<\n/Null null\n/Rect [10 null 30]\n>>');
     });
   });
 });

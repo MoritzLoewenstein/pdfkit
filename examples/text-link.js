@@ -1,9 +1,12 @@
-var fs = require('fs');
-var PDFDocument = require('../');
+import { createWriteStream, readFileSync } from 'node:fs';
+import PDFDocument from '@moritzloewenstein/pdfkit';
 
-var doc = new PDFDocument({ bufferPages: true });
-doc.pipe(fs.createWriteStream('text-link.pdf'));
-doc.addPage();
+const doc = new PDFDocument({
+  font: 'DejaVuSans',
+  fontData: readFileSync(new URL('./fonts/DejaVuSans.ttf', import.meta.url)),
+  bufferPages: true,
+});
+doc.pipe(createWriteStream('text-link.pdf'));
 doc.addPage();
 doc.switchToPage(0);
 doc.text('First Page', { paragraphGap: 4 });

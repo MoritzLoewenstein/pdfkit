@@ -1,43 +1,21 @@
-import PDFDocument from '../lib/document';
-import { documentToBlob } from '../lib/document_util';
-import { makeSimplePdf } from './simple_pdf';
+import { PDFDocument, toBlob } from '../lib/document.js';
+import { loadFonts } from './browser_fonts.js';
+import { makeSimplePdf } from './simple_pdf.js';
 
-// eslint-disable-next-line no-undef
-window.addEventListener('load', async () => {
-  const openBtn = document.getElementById('open-new-tab');
-  openBtn.addEventListener('click', async () => {
-    const url = await createPdf(true);
-    window.open(url);
-    URL.revokeObjectURL(url);
-  });
+try {
+  const [fontData, fontItalicData] = await loadFonts();
+  const doc = new PDFDocument({ font: 'RobotoMono', fontData });
+  doc.registerFont('RobotoMonoItalic', fontItalicData);
+  const output = toBlob(doc);
+  makeSimplePdf(doc, 'RobotoMonoItalic');
 
-  createPdf();
-});
-
-async function createPdf(keepUrl = false) {
-  const robotoMonoData = await fetch('/fonts/RobotoMono-Regular.ttf').then(
-    (r) => r.arrayBuffer(),
-  );
-  const robotoMonoItalicData = await fetch('/fonts/RobotoMono-Italic.ttf').then(
-    (r) => r.arrayBuffer(),
-  );
-  const FONT_DEFAULT = 'RobotoMono';
-  const FONT_ITALIC = 'RobotoMonoItalic';
-  const doc = new PDFDocument({
-    compress: false,
-    font: FONT_DEFAULT,
-    fontData: robotoMonoData,
-  });
-  doc.registerFont(FONT_ITALIC, robotoMonoItalicData);
-  const blobPromise = documentToBlob(doc);
-  makeSimplePdf(doc, FONT_ITALIC);
-  const blob = await blobPromise;
-  const url = URL.createObjectURL(blob);
-  const iframe = document.querySelector('iframe');
-  iframe.src = url;
-  if (!keepUrl) {
-    URL.revokeObjectURL(url);
-  } else {
-    return url;
-  }
+  const url = URL.createObjectURL(await output);
+  document.querySelector('iframe').src = url;
+  const openLink = document.querySelector('#open-new-tab');
+  openLink.href = url;
+  openLink.hidden = false;
+} catch (error) {
+  const status = document.querySelector('#status');
+  status.textContent = `Could not generate the PDF: ${error.message}`;
+  status.hidden = false;
 }

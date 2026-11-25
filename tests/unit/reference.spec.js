@@ -55,14 +55,19 @@ describe('PDFReference', () => {
     ]);
   });
 
-  test.skip('written data of reference with compressed data', () => {
+  test('written data of reference with compressed data', () => {
+    document = new PDFDocument({
+      ...globalThis.DEFAULT_OPTIONS,
+      compress: true,
+    });
     const docData = logData(document);
     const chunk = stringToUint8Array('test');
-    const compressed = zlib.deflateSync(chunk);
     const ref = new PDFReference(document, 1);
     ref.write(chunk);
 
     ref.finalize();
+    const compressed = docData[docData.indexOf('stream') + 1];
+    expect(new Uint8Array(zlib.inflateSync(compressed))).toEqual(chunk);
     expect(docData).toContainChunk([
       '1 0 obj',
       `<<

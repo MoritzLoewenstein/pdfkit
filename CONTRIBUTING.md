@@ -15,9 +15,9 @@
 pdfkit is organized in the following folders:
 
 - `lib`: The actual source code.
-- `js`: The built / distributable code.
+- `dist`: The Vite-built package. Run `npm run build` to generate it.
 - `docs`: Code and artifacts to generate documentation.
-- `demo`: Node and browser demos.
+- `examples` and `examples_2`: Node and browser examples.
 - `tests/unit`: Tests behavior of specific classes / methods.
 - `tests/visual`: Compare the pdf output against a reference.
 
@@ -37,42 +37,26 @@ To install the project you need to have `node`
     cd pdfkit
     ```
 
-2.  `npm install` to install dependencies
+2.  `npm ci` to install dependencies from the lockfile
 3.  `npm run build` to build the library
-4.  `npm run demo` to run the demo (check demo/out.pdf)
-5.  `npm run browser-demo` to run the browser demo (check demo/browser.html)
-    
-> Tip: Keep your `master` branch pointing at the original repository and make
-> pull requests from branches on your fork. To do this, run:
->
-> ```
-> git remote add upstream https://github.com/foliojs/pdfkit.git
-> git fetch upstream
-> git branch --set-upstream-to=upstream/master master
-> ```
->
-> This will add the original repository as a "remote" called "upstream,"
-> then fetch the git information from that remote, then set your local `master`
-> branch to use the upstream master branch whenever you run `git pull`.
-> Then you can make all of your pull request branches based on this `master`
-> branch. Whenever you want to update your version of `master`, do a regular
-> `git pull`.
+4.  `npm run dev` to open the editable browser playground
 
 ## Running and writing tests
 
-Tests are run using [Jest](http://jestjs.io/) and are categorized as unit and visual tests. 
+Tests use [Vitest](https://vitest.dev/).
 
 Visual tests check the pdf image screenshot against a reference stored as snapshots.
 
 Unit tests check behavior of specific classes / methods isolatedly.
 
 Test commands
-* `npm run test`: Run all tests
-* `npm run test:unit`: Run unit tests
-* `npm run test:visual`: Run visual tests
-* `npm run lint`: Run linter
+* `npm test -- --run`: Run all configured tests once
+* `npm test -- --run --project unit`: Run unit tests
+* `npm test -- --run --project visual`: Check rendered PDF snapshots
+* `npm run build && npm run test:package`: Check the ESM package entry point
+* `npm run biome:ci`: Check lint and formatting
 
-To write new tests, look for the *.spec.js files at `test/unit` and `test/visual` as examples
+To write new tests, look for the `*.spec.js` files in `tests/unit` and `tests/visual`.
 
 > Visual tests should use an embedded font, instead of system fonts, to ensure uniform rendering between different environments
 
@@ -89,4 +73,3 @@ Also, make sure to run the tests and lint the code before you commit your change
 > Tests should be added to check the changed behavior even if is a bug fix.
 
 If the proposed change affects document structure a unit test should be added, if affects rendering, add a visual test
-

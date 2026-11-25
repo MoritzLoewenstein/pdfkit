@@ -1,351 +1,381 @@
-const fs = require('fs');
-const vm = require('vm');
-const { markdown } = require('markdown');
-const CodeMirror = require('codemirror/addon/runmode/runmode.node');
-const PDFDocument = require('../');
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { runInNewContext } from 'node:vm';
+import { classHighlighter, highlightCode } from '@lezer/highlight';
+import { parser } from '@lezer/javascript';
+import MarkdownIt from 'markdown-it';
+import sharp from 'sharp';
+import { createServer } from 'vite';
 
-process.chdir(__dirname);
+export const docsDir = import.meta.dirname;
+export const outputDir = fileURLToPath(
+  new URL('../public/docs', import.meta.url),
+);
+export const chapters = [
+  'getting_started.md',
+  'paper_sizes.md',
+  'vector.md',
+  'text.md',
+  'images.md',
+  'outline.md',
+  'annotations.md',
+  'forms.md',
+  'destinations.md',
+  'attachments.md',
+  'accessibility.md',
+  'table.md',
+  'you_made_it.md',
+];
 
-// setup code mirror javascript mode
-const filename = require.resolve('codemirror/mode/javascript/javascript');
-const jsMode = fs.readFileSync(filename, 'utf8');
-vm.runInNewContext(jsMode, { CodeMirror });
-
-// style definitions for markdown
-const styles = {
-  h1: {
-    font: 'fonts/Alegreya-Bold.ttf',
-    fontSize: 25,
-    padding: 15,
-  },
-  h2: {
-    font: 'fonts/Alegreya-Bold.ttf',
-    fontSize: 18,
-    padding: 10,
-  },
-  h3: {
-    font: 'fonts/Alegreya-Bold.ttf',
-    fontSize: 18,
-    padding: 10,
-  },
-  para: {
-    font: 'fonts/Merriweather-Regular.ttf',
-    fontSize: 10,
-    padding: 10,
-  },
-  code: {
-    font: 'fonts/SourceCodePro-Regular.ttf',
-    fontSize: 9,
-  },
-  code_block: {
-    padding: 10,
-    background: '#2c2c2c',
-  },
-  inlinecode: {
-    font: 'fonts/SourceCodePro-Bold.ttf',
-    fontSize: 10,
-  },
-  listitem: {
-    font: 'fonts/Merriweather-Regular.ttf',
-    fontSize: 10,
-    padding: 6,
-  },
-  link: {
-    font: 'fonts/Merriweather-Regular.ttf',
-    fontSize: 10,
-    color: 'blue',
-    underline: true,
-  },
-  example: {
-    font: 'Helvetica',
-    fontSize: 9,
-    color: 'black',
-    padding: 10,
-  },
-};
-
-// syntax highlighting colors
-// based on Github's theme
-const colors = {
-  keyword: '#cb4b16',
-  atom: '#d33682',
-  number: '#009999',
-  def: '#2aa198',
-  variable: '#108888',
-  'variable-2': '#b58900',
-  'variable-3': '#6c71c4',
-  property: '#2aa198',
-  operator: '#6c71c4',
-  comment: '#999988',
-  string: '#dd1144',
-  'string-2': '#009926',
-  meta: '#768E04',
-  qualifier: '#b58900',
-  builtin: '#d33682',
-  bracket: '#cb4b16',
-  tag: '#93a1a1',
-  attribute: '#2aa198',
-  header: '#586e75',
-  quote: '#93a1a1',
-  link: '#93a1a1',
-  special: '#6c71c4',
-  default: '#002b36',
-};
-
-// shared lorem ipsum text so we don't need to copy it into every example
+export const markdown = new MarkdownIt();
 const lorem =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam in suscipit purus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus nec hendrerit felis. Morbi aliquam facilisis risus eu lacinia. Sed eu leo in turpis fringilla hendrerit. Ut nec accumsan nisl. Suspendisse rhoncus nisl posuere tortor tempus et dapibus elit porta. Cras leo neque, elementum a rhoncus ut, vestibulum non nibh. Phasellus pretium justo turpis. Etiam vulputate, odio vitae tincidunt ultricies, eros odio dapibus nisi, ut tincidunt lacus arcu eu elit. Aenean velit erat, vehicula eget lacinia ut, dignissim non tellus. Aliquam nec lacus mi, sed vestibulum nunc. Suspendisse potenti. Curabitur vitae sem turpis. Vestibulum sed neque eget dolor dapibus porttitor at sit amet sem. Fusce a turpis lorem. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;';
 
-let codeBlocks = [];
-let lastType = null;
+const fontFiles = {
+  body: 'Merriweather-Regular.ttf',
+  heading: 'Alegreya-Bold.ttf',
+  title: 'AlegreyaSans-Light.ttf',
+  code: 'SourceCodePro-Regular.ttf',
+  inlineCode: 'SourceCodePro-Bold.ttf',
+};
 
-// This class represents a node in the markdown tree, and can render it to pdf
-class Node {
-  constructor(tree) {
-    // special case for text nodes
-    if (typeof tree === 'string') {
-      this.type = 'text';
-      this.text = tree;
-      return;
+const readAsset = (file) => readFile(join(docsDir, file));
+
+export async function withPdfKit(generate) {
+  // Vite resolves the fork's extensionless source imports without requiring a
+  // prior library build or starting a listening server.
+  const vite = await createServer({
+    configFile: false,
+    root: join(docsDir, '..'),
+    appType: 'custom',
+    server: { middlewareMode: true, watch: null, ws: false },
+  });
+  try {
+    const { PDFDocument, toBytes } =
+      await vite.ssrLoadModule('/lib/document.js');
+    const fonts = Object.fromEntries(
+      await Promise.all(
+        Object.entries(fontFiles).map(async ([name, file]) => [
+          name,
+          await readAsset(`fonts/${file}`),
+        ]),
+      ),
+    );
+    await generate({ PDFDocument, toBytes, fonts });
+  } finally {
+    await vite.close();
+  }
+}
+
+export function isCode(token) {
+  return token.type === 'code_block' || token.type === 'fence';
+}
+
+function isJavaScript(language) {
+  return ['', 'js', 'javascript'].includes(language.trim());
+}
+
+export function codeFragments(code, language) {
+  if (!isJavaScript(language)) return [{ text: code, classes: '' }];
+  const fragments = [];
+  highlightCode(
+    code,
+    parser.parse(code),
+    classHighlighter,
+    (text, classes = '') => fragments.push({ text, classes }),
+    () => fragments.push({ text: '\n', classes: '' }),
+  );
+  return fragments;
+}
+
+export function exampleCode(image, blocks, filename) {
+  if (!/^\d+$/.test(image.content)) return undefined;
+  const token = blocks[Number(image.content)];
+  if (!token || !isJavaScript(token.info)) {
+    throw new Error(
+      `${filename}: no JavaScript example at index ${image.content}`,
+    );
+  }
+  return token.content;
+}
+
+export async function examplePreview(
+  { PDFDocument, toBytes, fonts },
+  code,
+  name,
+) {
+  try {
+    const doc = await runInNewContext(
+      `(async () => {\n${code}\nreturn doc;\n})()`,
+      {
+        PDFDocument,
+        doc: new PDFDocument({ font: 'Body', fontData: fonts.body, margin: 0 }),
+        imageBytes: await readAsset('images/test.jpeg'),
+        readAsset,
+        lorem,
+      },
+      { filename: name },
+    );
+    doc.end();
+    const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const pdfjsDir = new URL(
+      '../../',
+      import.meta.resolve('pdfjs-dist/legacy/build/pdf.mjs'),
+    );
+    const task = getDocument({
+      data: await toBytes(doc),
+      useSystemFonts: false,
+      standardFontDataUrl: fileURLToPath(new URL('standard_fonts/', pdfjsDir)),
+      wasmUrl: fileURLToPath(new URL('wasm/', pdfjsDir)),
+    });
+
+    try {
+      const pdf = await task.promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 150 / 72 });
+      const factory = pdf.canvasFactory;
+      const canvas = factory.create(
+        Math.ceil(viewport.width),
+        Math.ceil(viewport.height),
+      );
+      try {
+        await page.render({
+          canvas: canvas.canvas,
+          viewport,
+          background: '#fff',
+        }).promise;
+        return await sharp(canvas.canvas.toBuffer('image/png'))
+          .trim({ background: '#fff', threshold: 0 })
+          .png()
+          .toBuffer();
+      } finally {
+        page.cleanup();
+        factory.destroy(canvas);
+      }
+    } finally {
+      await task.destroy();
     }
+  } catch (cause) {
+    throw new Error(`Couldn't render ${name}`, { cause });
+  }
+}
 
-    this.type = tree.shift();
-    this.attrs = {};
+const highlightColors = {
+  'tok-atom': '#b11f70',
+  'tok-bool': '#b11f70',
+  'tok-comment': '#606b72',
+  'tok-keyword': '#9c3110',
+  'tok-number': '#006e73',
+  'tok-operator': '#5457ac',
+  'tok-propertyName': '#116d64',
+  'tok-string': '#b01336',
+  'tok-variableName': '#116d64',
+};
 
-    if (typeof tree[0] === 'object' && !Array.isArray(tree[0])) {
-      this.attrs = tree.shift();
+function renderCode(doc, token, fonts) {
+  const code = token.content.replace(/\n$/, '');
+  for (const { text, classes } of codeFragments(code, token.info)) {
+    const color = classes
+      .split(' ')
+      .map((name) => highlightColors[name])
+      .find(Boolean);
+    const lines = text.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (i > 0) doc.text('\n', { continued: false });
+      if (lines[i]) {
+        doc
+          .font(fonts.code, 9)
+          .fillColor(color || '#24292f')
+          .text(lines[i], { continued: true });
+      }
     }
+  }
+  doc.text('', { continued: false });
+  doc.moveDown(0.7);
+}
 
-    // parse sub nodes
-    this.content = [];
-    while (tree.length) {
-      this.content.push(new Node(tree.shift()));
+function inlineText(token) {
+  return token.children
+    .map((child) => (child.type.endsWith('break') ? ' ' : child.content))
+    .join('');
+}
+
+function renderInline(doc, token, fonts, prefix = '') {
+  const fragments = prefix ? [{ value: prefix }] : [];
+  let link = null;
+  let emphasis = false;
+  for (const child of token.children) {
+    if (child.type === 'link_open') link = child.attrGet('href');
+    else if (child.type === 'link_close') link = null;
+    else if (child.type === 'em_open' || child.type === 'strong_open')
+      emphasis = true;
+    else if (child.type === 'em_close' || child.type === 'strong_close')
+      emphasis = false;
+    else if (child.content || child.type.endsWith('break')) {
+      fragments.push({
+        value: child.type.endsWith('break') ? ' ' : child.content,
+        code: child.type === 'code_inline',
+        link,
+        emphasis,
+      });
     }
+  }
+  for (const [index, { value, code, link, emphasis }] of fragments.entries()) {
+    doc
+      .font(code ? fonts.inlineCode : emphasis ? fonts.heading : fonts.body, 10)
+      .fillColor(link ? '#174478' : 'black')
+      .text(value, {
+        link: link ?? null,
+        continued: index < fragments.length - 1,
+      });
+  }
+  doc.moveDown(0.7);
+}
 
-    switch (this.type) {
-      case 'header':
-        this.type = `h${this.attrs.level}`;
-        break;
+async function renderChapter(doc, filename, kit) {
+  const { fonts } = kit;
+  const tokens = markdown.parse(
+    await readFile(join(docsDir, filename), 'utf8'),
+    {},
+  );
+  const blocks = tokens.filter(isCode);
+  const lists = [];
+  let prefix = '';
+  let previousHeading = '';
+  let chapterOutline;
 
-      case 'code_block': {
-        // use code mirror to syntax highlight the code block
-        var code = this.content[0].text;
-        this.content = [];
-        CodeMirror.runMode(code, 'javascript', (text, style) => {
-          const color = colors[style] || colors.default;
-          const opts = {
-            color,
-            continued: text !== '\n',
-          };
-
-          return this.content.push(new Node(['code', opts, text]));
-        });
-
-        if (this.content.length) {
-          this.content[this.content.length - 1].attrs.continued = false;
-        }
-        codeBlocks.push(code);
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    switch (token.type) {
+      case 'heading_open': {
+        const tag = token.tag;
+        const title = inlineText(tokens[++i]);
+        if (tag === 'h1' || (tag === 'h2' && !previousHeading)) doc.addPage();
+        if (tag === 'h1') chapterOutline = doc.outline.addItem(title);
+        if (tag === 'h2') chapterOutline?.addItem(title);
+        doc
+          .font(fonts.heading, tag === 'h1' ? 25 : 18)
+          .fillColor('black')
+          .text(title);
+        doc.moveDown(0.55);
+        previousHeading = tag;
         break;
       }
-
-      case 'img':
-        // images are used to generate inline example output
-        // stores the JS so it can be run
-        // in the render method
-        this.type = 'example';
-        code = codeBlocks[this.attrs.alt];
-        if (code) {
-          this.code = code;
+      case 'inline': {
+        const [image] = token.children;
+        if (image?.type === 'image' && token.children.length === 1) {
+          const code = exampleCode(image, blocks, filename);
+          const src = image.attrGet('src');
+          if (code === undefined && /^(?:[a-z]+:|\/)/i.test(src)) {
+            renderInline(doc, token, fonts, prefix);
+          } else {
+            const bytes =
+              code === undefined
+                ? await readAsset(src)
+                : await examplePreview(
+                    kit,
+                    code,
+                    `${filename} example ${image.content}`,
+                  );
+            const { width, height } = await sharp(bytes).metadata();
+            const { margins } = doc.page;
+            const maxWidth = doc.page.width - margins.left - margins.right;
+            const maxHeight = doc.page.height - margins.top - margins.bottom;
+            const heightHint = Number(image.attrGet('title'));
+            const scale = Math.min(
+              code === undefined ? 1 : 72 / 150,
+              maxWidth / width,
+              (heightHint || maxHeight) / height,
+            );
+            if (doc.y + height * scale > doc.page.height - margins.bottom)
+              doc.addPage();
+            doc.image(bytes, { x: margins.left, width: width * scale });
+            doc.moveDown(1);
+          }
+        } else {
+          renderInline(doc, token, fonts, prefix);
         }
-        this.height = +this.attrs.title || 0;
-        break;
-    }
-
-    this.style = styles[this.type] || styles.para;
-  }
-
-  // sets the styles on the document for this node
-  setStyle(doc) {
-    if (this.style.font) {
-      doc.font(this.style.font);
-    }
-
-    if (this.style.fontSize) {
-      doc.fontSize(this.style.fontSize);
-    }
-
-    if (this.style.color || this.attrs.color) {
-      doc.fillColor(this.style.color || this.attrs.color);
-    } else {
-      doc.fillColor('black');
-    }
-
-    const options = {};
-    options.align = this.style.align;
-    options.link = this.attrs.href || null; // override continued link
-    if (this.attrs.continued != null) {
-      options.continued = this.attrs.continued;
-    }
-    return options;
-  }
-
-  // renders this node and its subnodes to the document
-  render(doc, continued) {
-    let y;
-    if (continued == null) {
-      continued = false;
-    }
-    switch (this.type) {
-      case 'example': {
-        this.setStyle(doc);
-
-        // translate all points in the example code to
-        // the current point in the document
-        doc.moveDown();
-        doc.save();
-        doc.translate(doc.x, doc.y);
-        var { x } = doc;
-        ({ y } = doc);
-        doc.x = doc.y = 0;
-
-        // Update the page width for those which rely on the width of the document
-        var docPageWidth = doc.page.width;
-        var docPageHeight = doc.page.height;
-        var docPageMargins = doc.page.margins;
-        doc.page.width = doc.page.width - x - doc.page.margins.right;
-        doc.page.margins = { top: 0, left: 0, right: 0, bottom: 0 };
-
-        // run the example code with the document
-        vm.runInNewContext(this.code, {
-          doc,
-          lorem,
-        });
-
-        // restore points and styles
-        y += doc.y;
-        doc.restore();
-        doc.x = x;
-        doc.y = y + this.height;
-        doc.page.width = docPageWidth;
-        doc.page.height = docPageHeight;
-        doc.page.margins = docPageMargins;
+        prefix = '';
+        previousHeading = '';
         break;
       }
+      case 'bullet_list_open':
+        lists.push(null);
+        break;
+      case 'ordered_list_open':
+        lists.push(Number(token.attrGet('start') ?? 1));
+        break;
+      case 'bullet_list_close':
+      case 'ordered_list_close':
+        lists.pop();
+        break;
+      case 'list_item_open':
+        prefix =
+          lists.at(-1) === null ? '•  ' : `${lists[lists.length - 1]++}.  `;
+        break;
+      case 'fence':
+      case 'code_block':
+        renderCode(doc, token, fonts);
+        previousHeading = '';
+        break;
       case 'hr':
         doc.addPage();
+        previousHeading = 'hr';
         break;
-      default:
-        // loop through subnodes and render them
-        for (let index = 0; index < this.content.length; index++) {
-          const fragment = this.content[index];
-
-          if (this.type === 'numberlist') {
-            let node = new Node(['inlinecode', `${index + 1}. `]);
-            fragment.content.splice(0, 0, node);
+      case 'table_open': {
+        const rows = [];
+        let alignment;
+        while (tokens[++i].type !== 'table_close') {
+          const part = tokens[i];
+          if (part.type === 'tr_open') rows.push([]);
+          if (part.type === 'th_open' || part.type === 'td_open') {
+            alignment = part.attrGet('style')?.match(/text-align:(\w+)/)?.[1];
           }
-
-          if (fragment.type === 'text') {
-            // add a new page for each heading, unless it follows another heading
-            if (
-              ['h1', 'h2'].includes(this.type) &&
-              lastType != null &&
-              lastType !== 'h1'
-            ) {
-              doc.addPage();
-            }
-
-            if (this.type === 'h1') {
-              doc.h1Outline = doc.outline.addItem(fragment.text);
-            } else if (this.type === 'h2' && doc.h1Outline !== null) {
-              doc.h1Outline.addItem(fragment.text);
-            }
-
-            // set styles and whether this fragment is continued (for rich text wrapping)
-            const options = this.setStyle(doc);
-            if (options.continued == null) {
-              options.continued = continued || index < this.content.length - 1;
-            }
-
-            // remove newlines unless this is code
-            if (this.type !== 'code') {
-              fragment.text = fragment.text.replace(/[\r\n]\s*/g, ' ');
-            }
-
-            doc.text(fragment.text, options);
-          } else {
-            fragment.render(
-              doc,
-              index < this.content.length - 1 && this.type !== 'bulletlist',
-            );
-          }
-
-          lastType = this.type;
+          if (part.type === 'inline')
+            rows.at(-1).push({
+              text: inlineText(part),
+              ...(alignment && { align: { x: alignment } }),
+            });
         }
-    }
-
-    if (this.style.padding) {
-      return (doc.y += this.style.padding);
+        doc.font(fonts.body, 9).fillColor('black');
+        doc.table({ data: rows });
+        doc.moveDown(1);
+        previousHeading = '';
+        break;
+      }
     }
   }
 }
 
-// reads and renders a markdown/literate javascript file to the document
-const render = (doc, filename) => {
-  codeBlocks = [];
-  const tree = markdown.parse(fs.readFileSync(filename, 'utf8'));
-  tree.shift();
-
-  const result = [];
-  while (tree.length) {
-    const node = new Node(tree.shift());
-    result.push(node.render(doc));
-  }
-  return result;
-};
-
-// renders the title page of the guide
-const renderTitlePage = (doc) => {
-  const title = 'PDFKit Guide';
-  const author = 'By Devon Govett';
-  const version = `Version ${require('../package.json').version}`;
-
-  doc.font('fonts/AlegreyaSans-Light.ttf', 60);
-  doc.y = doc.page.height / 2 - doc.currentLineHeight();
-  doc.text(title, { align: 'center' });
-  const w = doc.widthOfString(title);
-  doc.h1Outline = doc.outline.addItem(title);
-
-  doc.fontSize(20);
-  doc.y -= 10;
-  doc.text(author, {
-    align: 'center',
-    indent: w - doc.widthOfString(author),
+async function generateGuide(kit) {
+  const { PDFDocument, fonts, toBytes } = kit;
+  const { version } = JSON.parse(
+    await readFile(join(docsDir, '../package.json'), 'utf8'),
+  );
+  const doc = new PDFDocument({
+    font: 'Body',
+    fontData: fonts.body,
+    info: { Title: 'PDFKit Guide' },
   });
+  doc.outline.addItem('PDFKit Guide');
+  doc.y = doc.page.height / 2 - 70;
+  doc.font(fonts.title, 60).text('PDFKit Guide', { align: 'center' });
+  doc.font(fonts.heading, 20).text('By Devon Govett', { align: 'center' });
+  doc
+    .font(fonts.body, 10)
+    .moveDown(0.5)
+    .text(`Version ${version}`, { align: 'center' });
+  for (const filename of chapters) await renderChapter(doc, filename, kit);
+  doc.end();
+  await mkdir(outputDir, { recursive: true });
+  await writeFile(join(outputDir, 'guide.pdf'), await toBytes(doc));
+}
 
-  doc.font(styles.para.font, 10);
-  doc.text(version, {
-    align: 'center',
-    indent: w - doc.widthOfString(version),
-  });
-
-  doc.addPage();
-};
-
-// render all sections of the guide and write the pdf file
-const doc = new PDFDocument();
-doc.pipe(fs.createWriteStream('guide.pdf'));
-renderTitlePage(doc);
-render(doc, 'getting_started.md');
-render(doc, 'paper_sizes.md');
-render(doc, 'vector.md');
-render(doc, 'text.md');
-render(doc, 'images.md');
-render(doc, 'outline.md');
-render(doc, 'annotations.md');
-render(doc, 'forms.md');
-render(doc, 'destinations.md');
-render(doc, 'attachments.md');
-render(doc, 'accessibility.md');
-render(doc, 'table.md');
-render(doc, 'you_made_it.md');
-doc.end();
+if (
+  process.argv[1] &&
+  pathToFileURL(process.argv[1]).href === import.meta.url
+) {
+  await withPdfKit(generateGuide);
+  console.log(`Wrote ${join(outputDir, 'guide.pdf')}`);
+}

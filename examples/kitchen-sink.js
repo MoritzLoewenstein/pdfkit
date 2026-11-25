@@ -1,19 +1,27 @@
-var PDFDocument = require('../');
-var tiger = require('./tiger');
-var fs = require('fs');
+import { createWriteStream, readFileSync } from 'node:fs';
+import PDFDocument from '@moritzloewenstein/pdfkit';
+import tiger from './tiger.js';
 
-// Create a new PDFDocument
-var doc = new PDFDocument();
+const doc = new PDFDocument({
+  font: 'Palatino',
+  fontData: readFileSync(new URL('./fonts/PalatinoBold.ttf', import.meta.url)),
+});
+doc.registerFont(
+  'DejaVuSans',
+  readFileSync(new URL('./fonts/DejaVuSans.ttf', import.meta.url)),
+);
+doc.registerFont(
+  'Chalkboard',
+  readFileSync(new URL('./fonts/Chalkboard.ttc', import.meta.url)),
+  'Chalkboard',
+);
 
-doc.pipe(fs.createWriteStream('kitchen-sink.pdf'));
+doc.pipe(createWriteStream('kitchen-sink.pdf'));
 
 // Set some meta data
 doc.info['Title'] = 'Test Document';
 
 doc.info['Author'] = 'Devon Govett';
-
-// Register a font name for use later
-doc.registerFont('Palatino', 'fonts/PalatinoBold.ttf');
 
 // Set the font, draw some text, and embed an image
 doc
@@ -22,12 +30,22 @@ doc
   .text('Some text with an embedded font!', 100, 100)
   .fontSize(18)
   .text('PNG and JPEG images:')
-  .image('images/test.png', 100, 160, {
-    width: 412,
-  })
-  .image('images/test.jpeg', 190, 400, {
-    height: 300,
-  });
+  .image(
+    readFileSync(new URL('./images/test.png', import.meta.url)),
+    100,
+    160,
+    {
+      width: 412,
+    },
+  )
+  .image(
+    readFileSync(new URL('./images/test.jpeg', import.meta.url)),
+    190,
+    400,
+    {
+      height: 300,
+    },
+  );
 
 // Add another page
 doc.addPage().fontSize(25).text('Here is some vector graphics...', 100, 100);
@@ -39,18 +57,18 @@ doc.circle(280, 200, 50).fill('#6600FF');
 
 doc
   .scale(0.6)
-  .translate(470, -380)
+  .translate(470, 140)
   .path('M 250,75 L 323,301 131,161 369,161 177,301 z')
   .fill('red', 'even-odd')
   .restore(); // render an SVG path // fill using the even-odd winding rule
 
-var loremIpsum =
+const loremIpsum =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam in suscipit purus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus nec hendrerit felis. Morbi aliquam facilisis risus eu lacinia. Sed eu leo in turpis fringilla hendrerit. Ut nec accumsan nisl. Suspendisse rhoncus nisl posuere tortor tempus et dapibus elit porta. Cras leo neque, elementum a rhoncus ut, vestibulum non nibh. Phasellus pretium justo turpis. Etiam vulputate, odio vitae tincidunt ultricies, eros odio dapibus nisi, ut tincidunt lacus arcu eu elit. Aenean velit erat, vehicula eget lacinia ut, dignissim non tellus. Aliquam nec lacus mi, sed vestibulum nunc. Suspendisse potenti. Curabitur vitae sem turpis. Vestibulum sed neque eget dolor dapibus porttitor at sit amet sem. Fusce a turpis lorem. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;\nMauris at ante tellus. Vestibulum a metus lectus. Praesent tempor purus a lacus blandit eget gravida ante hendrerit. Cras et eros metus. Sed commodo malesuada eros, vitae interdum augue semper quis. Fusce id magna nunc. Curabitur sollicitudin placerat semper. Cras et mi neque, a dignissim risus. Nulla venenatis porta lacus, vel rhoncus lectus tempor vitae. Duis sagittis venenatis rutrum. Curabitur tempor massa tortor.';
 
 // Draw some text wrapped to 412 points wide
 doc
   .text('And here is some wrapped text...', 100, 300)
-  .font('Helvetica', 13)
+  .font('DejaVuSans', 13)
   .moveDown()
   .text(loremIpsum, {
     // move down 1 line
@@ -67,10 +85,8 @@ doc
   .text('Rendering some SVG paths...', 100, 100)
   .translate(220, 300);
 
-var i, len, part;
 // Render each path that makes up the tiger image
-for (i = 0, len = tiger.length; i < len; i++) {
-  part = tiger[i];
+for (const part of tiger) {
   doc.save();
   doc.path(part.path); // render an SVG path
   if (part['stroke-width']) {
@@ -98,7 +114,7 @@ doc.addPage().fillColor('blue').text('Here is a link!', 100, 100, {
 // Add a list with a font loaded from a TrueType collection file
 doc
   .fillColor('#000')
-  .font('fonts/Chalkboard.ttc', 'Chalkboard', 16)
+  .font('Chalkboard', 16)
   .list(['One', 'Two', 'Three'], 100, 150);
 
 // Create text with a spot color
@@ -107,7 +123,7 @@ doc.moveDown().fillColor('PANTONE185C').text('This text uses spot color!');
 
 doc.moveDown();
 
-doc.font('Helvetica').fillColor('#000').text('Horizontal scaling support:');
+doc.font('DejaVuSans').fillColor('#000').text('Horizontal scaling support:');
 
 doc.moveDown();
 

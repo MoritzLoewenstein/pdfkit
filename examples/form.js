@@ -1,23 +1,25 @@
-var PDFDocument = require('../');
-var fs = require('fs');
+import { createWriteStream, readFileSync } from 'node:fs';
+import PDFDocument from '@moritzloewenstein/pdfkit';
+
+const font = 'Palatino';
+const fontData = readFileSync(
+  new URL('./fonts/PalatinoBold.ttf', import.meta.url),
+);
 
 // Create a new PDFDocument
-var doc = new PDFDocument();
+const doc = new PDFDocument({ font, fontData, compress: false });
 
-doc.pipe(fs.createWriteStream('form.pdf'));
+doc.pipe(createWriteStream('form.pdf'));
 
 // Set some meta data
 doc.info['Title'] = 'Test Form Document';
 doc.info['Author'] = 'test-acroform.js';
 
-doc.font('Helvetica'); // establishes the default font for forms
-doc.initForm();
+doc.initForm({ embedFonts: true });
 
-let rootField = doc.formField('rootField');
-doc.font('Courier');
-let child1Field = doc.formField('child1Field', { parent: rootField });
-doc.font('Helvetica');
-let child2Field = doc.formField('child2Field', { parent: rootField });
+const rootField = doc.formField('rootField');
+const child1Field = doc.formField('child1Field', { parent: rootField });
+const child2Field = doc.formField('child2Field', { parent: rootField });
 
 let y = 10;
 doc.formText('leaf1', 10, y, 200, 20, {
@@ -31,8 +33,10 @@ doc.formText('leaf1', 10, y, 200, 20, {
 });
 
 y += 30;
-opts = {
+let opts = {
   parent: child1Field,
+  alternateName: 'Amount in dollars',
+  fontSize: 11,
   value: 32.98,
   format: {
     type: 'number',
@@ -57,7 +61,7 @@ doc.formText('leaf3', 10, y, 200, 80, {
 });
 
 y += 90;
-var opts = {
+opts = {
   backgroundColor: 'yellow',
   label: 'Test Button',
 };

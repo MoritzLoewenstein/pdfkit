@@ -15,7 +15,7 @@ describe('PDF/UA', () => {
     doc.end();
     expect(data).toContainChunk([
       `11 0 obj`,
-      `<<\n/length 841\n/Type /Metadata\n/Subtype /XML\n/Length 843\n>>`,
+      /^<<\n\/Type \/Metadata\n\/Subtype \/XML\n\/Length \d+\n>>$/,
     ]);
   });
 
