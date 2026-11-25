@@ -3,14 +3,21 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   build: {
     copyPublicDir: false,
     sourcemap: true,
-    lib: {
-      entry: resolve(__dirname, 'lib/document.js'),
-      formats: ['es'],
-    },
+    ...(isSsrBuild
+      ? {
+          emptyOutDir: false,
+          rolldownOptions: { output: { entryFileNames: 'pdfkit.node.js' } },
+        }
+      : {
+          lib: {
+            entry: resolve(__dirname, 'lib/document.js'),
+            formats: ['es'],
+          },
+        }),
   },
   test: {
     setupFiles: ['tests/unit/setupTests.js'],
@@ -39,4 +46,4 @@ export default defineConfig({
       },
     ],
   },
-});
+}));
