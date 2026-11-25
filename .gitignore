@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
 dist
+.amp/portals/*
 
 examples_2/simple_node.pdf
 examples_2/simple_node_stream.pdf

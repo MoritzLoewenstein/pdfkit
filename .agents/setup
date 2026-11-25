@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Allow canvas to compile on orbs without a matching prebuilt binary.
+missing=()
+for package in build-essential python3 pkg-config libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev; do
+  if ! dpkg-query -W -f='${db:Status-Status}\n' "$package" 2>/dev/null | grep -qx installed; then
+    missing+=("$package")
+  fi
+done
+if ((${#missing[@]})); then
+  echo "Installing canvas build prerequisites: ${missing[*]}"
+  time sudo -n apt-get update
+  time sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+fi
+
+export VOLTA_HOME="${VOLTA_HOME:-$HOME/.volta}"
+if [[ ! -x "$VOLTA_HOME/bin/volta" ]]; then
+  echo 'Installing Volta'
+  time curl -fsSL https://get.volta.sh | bash -s -- --version 2.0.2 --skip-setup
+fi
+"$VOLTA_HOME/bin/volta" setup
+export PATH="$VOLTA_HOME/bin:$PATH"
+
+echo 'Activating the Node.js version pinned in package.json'
+time node --version
+npm --version
+
+echo 'Installing dependencies from package-lock.json'
+time npm ci --include=dev --no-audit --no-fund
