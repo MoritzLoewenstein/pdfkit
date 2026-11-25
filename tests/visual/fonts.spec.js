@@ -25,18 +25,28 @@ Cyrillic 2 (Extended)
 ѐёђѓєѕіїјљњћќѝўџґӂғҗқңүұҳҷһәӣөӯ`;
 
 describe('fonts', function () {
-  test.skip('default (Helvetica)', function () {
-    return runDocTest({ systemFonts: true }, function (doc) {
-      doc.text(characters, 10, 10);
-    });
-  });
+  // PDFDocument still requires supplied font bytes instead of standard font names.
+  test.todo('default (Helvetica)');
+  test.todo('Helvetica Bold');
 
-  test.skip('Helvetica Bold', function () {
-    return runDocTest({ systemFonts: true }, function (doc) {
-      doc.font('Helvetica-Bold');
-      doc.text(characters, 10, 10);
-    });
-  });
+  test('bundled standard font fallbacks', () =>
+    runDocTest({ failureThreshold: 0.001 }, (doc) => {
+      // Reference PDF standard fonts without embedding them to exercise PDF.js's
+      // bundled fallbacks, independently of PDFKit's font registration API.
+      for (const [index, name] of ['Helvetica', 'Helvetica-Bold'].entries()) {
+        const font = doc.ref({
+          Type: 'Font',
+          Subtype: 'Type1',
+          BaseFont: name,
+          Encoding: 'WinAnsiEncoding',
+        });
+        font.end();
+        doc.page.fonts[name] = font;
+        doc.addContent(
+          `BT /${name} 24 Tf 1 0 0 -1 30 ${50 + index * 35} Tm (${name}: ABC abc 123) Tj ET`,
+        );
+      }
+    }));
 
   test('Roboto', function () {
     return runDocTest(function (doc) {

@@ -1,26 +1,41 @@
 # PDFKit Guide
 
-The PDFKit guide can be read a number of ways.  The first is online at [pdfkit.org](http://pdfkit.org/).
-You can also read the guide in PDF form, in this directory or [online](http://pdfkit.org/docs/guide.pdf).
+The website and PDF guide are generated from the Markdown files in this
+directory. From the repository root, use Node.js 22.13 or later and run:
 
-Both the website and the PDF guide are generated from the Markdown files
-in this directory. Just run `npm run docs` to generate them.
-You will need to have ImageMagick 7 installed so the `magick` command is
-on your `$PATH`.
+```sh
+npm ci
+npm run docs
+npm run dev
+```
 
-The examples are actually run when generating the PDF in order to show the results inline.
-The `generate.js` file in this directory is actually quite short.  It parses the markdown files into a 
-tree structure using [markdown-js](https://github.com/evilstreak/markdown-js), syntax highlights the code
-examples using [codemirror](https://github.com/marijnh/codemirror), compiles and runs the code examples and puts the results
-inline, and generates the PDF using PDFKit. You can read the generator script source code to get a feeling for 
-how you might do something slightly more complex than the guide itself shows.
+Open `/docs/index.html` on the Vite dev server. `npm run pdf-guide` writes
+`public/docs/guide.pdf` and `npm run website` builds the HTML, styles and preview
+images in `public/docs/`. Neither command needs a prior library build or
+ImageMagick. Keep these generated files out of commits.
 
-The markdown syntax used is pretty much standard, with a couple tweaks.
+The generators use Markdown-it for Markdown, Lezer for JavaScript highlighting,
+and PDF.js and Sharp to render and crop previews of the first page of each
+example PDF. The preview images are not interactive. The examples run against
+the fork's own Vite-loaded source and use in-memory font and image bytes.
+Only generate docs from source you trust: the example runner is not a sandbox
+for untrusted code.
 
-1. Code example output is references using the image notation, using the alt text as the example number starting from 
-    zero in the current file, and the title as the example output height. E.g. `![x](name "height")`.
-  
-2. Page breaks are added before `h1` and `h2`s, unless there are two in a row. `h3` is treated the same as `h2` but
-    can be used to avoid this in the case you need multiple `h2`s on the same page.
+## Authoring
 
-3. The horizontal rule syntax (`* * *`) denotes an explicit page break
+- Put `![0]()` in its own paragraph to show the first code block's output.
+  Numbering starts at zero in each file and counts both fenced and indented code
+  blocks. The referenced code must be JavaScript. In `![0](preview.png "120")`,
+  the numeric title caps the PDF preview height at 120 points; the generator
+  does not use the image path for numbered examples. Use descriptive alt text
+  for a static image (for example, a screenshot of an interactive form).
+- Runnable snippets receive an open `doc` with an embedded default font, the
+  sample `lorem` text, `imageBytes` from `images/test.jpeg`, and an async
+  `readAsset(path)` helper for files relative to this directory. The generator
+  calls `doc.end()` after the snippet completes.
+- Chapter headings (`#`) start new PDF pages. Section headings (`##`) start a
+  new PDF page unless they follow a heading or explicit page break. A
+  horizontal rule (`* * *` or `---`) inserts a PDF page break.
+
+Publishing is separate from generation and is not required to preview the docs.
+The publish script requires an explicit destination repository URL.

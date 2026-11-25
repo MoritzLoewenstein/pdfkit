@@ -236,6 +236,8 @@ When creating a structure element, you can provide options:
  * `alt` - alternative text for an image or other visual content
  * `expanded` - the expanded form of an abbreviation or acronym
  * `actual` - the actual text the content represents (e.g. if it is rendered as vector graphics)
+ * `bbox` - bounding box of the element's content in PDFKit coordinates `[left, top, right, bottom]`, required for `Figure` elements in PDF/UA
+ * `placement` - layout placement of the element: `'Block'` (the default when `bbox` is set) or `'Inline'`
 
 Example of a structure tree with options specified:
 
@@ -256,7 +258,8 @@ Example of a structure tree with options specified:
             ]),
         ]),
         doc.struct('Figure', {
-            alt: 'photo of a concrete path with tactile paving'
+            alt: 'photo of a concrete path with tactile paving',
+            bbox: [100, 200, 500, 600]
         }, [
             photoStructureContent
         ])
@@ -280,8 +283,8 @@ This is equivalent to:
 
     const section = doc.struct('Sect');
     doc.addStructure(section);
-    section.add(doc.struct('P', () => { doc.text("Foo. "); });
-    section.add(doc.struct('P', () => { doc.text("Bar. "); });
+    section.add(doc.struct('P', () => { doc.text("Foo. "); }));
+    section.add(doc.struct('P', () => { doc.text("Bar. "); }));
 
 The `list()` method also accepts a `structParent` option. By default, it add list items
 (type `LI`) to the parent, each of which contains a label (type `Lbl`, which holds the bullet,
@@ -297,6 +300,26 @@ Example of creating structure automatically with `list()`:
     const list = doc.struct('List');
     someElement.add(list);
     doc.list(["Foo. ", "Bar. "], { structParent: list });
+
+### Tagged Links
+
+For a text link, call `text()` with its `link` option inside a `Link` structure
+element's content callback. This associates the clickable annotation with the
+same structure element as the visible text. Provide a descriptive link label:
+
+```js
+const paragraph = doc.struct('P');
+doc.addStructure(paragraph);
+paragraph.add(doc.struct('Link', { alt: 'PDFKit documentation' }, () => {
+  doc.text('PDFKit documentation', { link: 'https://pdfkit.org/', underline: true });
+}));
+paragraph.end();
+```
+
+When placing a link directly with `doc.link()`, pass `{ structParent: link }`
+in the annotation options, where `link` is its `Link` structure element. Add
+the annotation before ending the element. For a named destination added with
+`doc.goTo()`, pass the structure parent explicitly in the same way.
 
 ## Tags and Structure Element Types
 
@@ -359,7 +382,7 @@ Non-structure tags:
  * `Reference` - content in a document that refers to other content (e.g. page number in an index)
  * `BibEntry` - bibliography entry; may have a `Lbl` (see "block" elements)
  * `Code` - code
- * `Link` - hyperlink; should contain a link annotation
+ * `Link` - hyperlink; contains the link annotation and its marked text, when present
  * `Annot` - annotation (other than a link)
  * `Ruby` - Chinese/Japanese pronunciation/explanation
  * `RB` - Ruby base text
@@ -371,6 +394,15 @@ Non-structure tags:
 
 "Illustration" elements (should have `alt` and/or `actualtext` set):
 
- * `Figure` - figure
+ * `Figure` - figure, should also have `bbox` set
  * `Formula` - formula
  * `Form` - form widget
+
+## Limitations
+
+### Font embedding
+
+PDF/UA and PDF/A require every font used in the document to be embedded.
+A reference to one of the standard PDF fonts (such as Helvetica or Courier)
+without font data does not meet this requirement. Use TrueType or OpenType
+font data instead, supplied when creating the document or with `doc.font(fontBytes)`.

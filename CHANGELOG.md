@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+- Port upstream PDFKit fixes through November 24, 2026, while retaining the fork's Vite build, embedded-font defaults, and Web Streams output.
+- Restore PNG and JPEG embedding, attachments, compression, and password protection without Node.js polyfills. Add object streams, page labels and layout, outline destinations, `onPageAdded`, and named output helpers.
+- Improve text wrapping, spacing and decorations, font subsetting, tagged links and tables, form fields, SVG paths, and PDF/A metadata. Add repeating table headers and image placement options.
+
 ### [v0.17.1] - 2025-05-02
 
 - Fix null values in table cells rendering as `[object Object]`

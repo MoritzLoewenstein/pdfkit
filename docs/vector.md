@@ -57,10 +57,15 @@ PDFKit also includes some helpers that make defining common shapes much
 easier. Here is a list of the helpers.
 
 * `rect(x, y, width, height)`
-* `roundedRect(x, y, width, height, cornerRadius)`
+* `roundedRect(x, y, width, height, borderRadius)`
 * `ellipse(centerX, centerY, radiusX, radiusY = radiusX)`
 * `circle(centerX, centerY, radius)`
 * `polygon(points...)`
+
+`roundedRect` accepts a single radius or an array of per-corner radii in clockwise
+order: top-left, top-right, bottom-right, bottom-left. A radius of `0` leaves that
+corner square.
+For example, to round only the right-side corners: `roundedRect(x, y, w, h, [0, 20, 20, 0])`.
 
 The last one, `polygon`, allows you to pass in a list of points (arrays of x,y
 pairs), and it will create the shape by moving to the first point, and then
@@ -168,7 +173,7 @@ The output of this example looks like this:
 
 What is a drawing without color? PDFKit makes it simple to set the fill and
 stroke color and opacity. You can pass an array specifying an RGB or CMYK
-color, a hex color string, or use any of the named CSS colors.
+color, a hex color string, or use any of the named CSS colors (case-insensitive).
 
 The `fillColor` and `strokeColor` methods accept an optional second argument as a shortcut for
 setting the `fillOpacity` and `strokeOpacity`. Finally, the `opacity` method
@@ -187,6 +192,12 @@ that you don't have to call `fillColor` or `strokeColor` beforehand. The
 This example produces the following output:
 
 ![5](images/color.png "100")
+
+For PDF/UA output, set `fillColor` and `strokeColor` before constructing a path
+(with `moveTo`, `path`, `rect`, `circle`, and similar methods). Then call `fill`,
+`stroke`, or `fillAndStroke` without color arguments. Passing colors to these
+painting methods can insert color-space operators in the middle of a path,
+which the PDF specification does not allow.
 
 ## Gradients
 

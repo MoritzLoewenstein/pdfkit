@@ -1,48 +1,45 @@
-import { concatUint8Arrays } from 'uint8array-extras';
-import PDFDocument from '../../lib/document';
+import { readFileSync } from 'node:fs';
+import { expect } from 'vitest';
+import PDFDocument from '../../lib/document.js';
+import { documentToArrayBuffer } from '../../lib/document_util.js';
 import { pdf2png } from './pdf2png.js';
 
-function runDocTest(options, fn) {
+export function fixture(path) {
+  return new Uint8Array(readFileSync(new URL(`../${path}`, import.meta.url)));
+}
+
+const fonts = Object.fromEntries(
+  ['Regular', 'Italic', 'Medium', 'MediumItalic'].map((face) => {
+    const path = `fonts/Roboto-${face}.ttf`;
+    return [`tests/${path}`, fixture(path)];
+  }),
+);
+
+export async function runDocTest(options, fn) {
   if (typeof options === 'function') {
     fn = options;
     options = {};
   }
-  if (!options.info) {
-    options.info = {};
+
+  const { failureThreshold = 0.01, ...documentOptions } = options;
+  const doc = new PDFDocument({
+    font: 'Roboto-Regular',
+    fontData: fonts['tests/fonts/Roboto-Regular.ttf'],
+    compress: false,
+    ...documentOptions,
+  });
+  // The legacy cases name font fixtures by path; register those names as aliases.
+  for (const [name, data] of Object.entries(fonts)) {
+    doc.registerFont(name, data);
   }
 
-  options = {
-    ...globalThis.DEFAULT_OPTIONS,
-    ...options,
-  };
-
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument(options);
-    const buffers = [];
-
-    (async () => {
-      await fn(doc);
-    })()
-      .then(() => {
-        doc.on('error', (err) => reject(err));
-        doc.on('data', buffers.push.bind(buffers));
-        doc.on('end', async () => {
-          try {
-            const pdfData = concatUint8Arrays(buffers);
-            const { systemFonts = false } = options;
-            const images = await pdf2png(pdfData, { systemFonts });
-            for (let image of images) {
-              expect(image).toMatchImageSnapshot(options);
-            }
-            resolve();
-          } catch (err) {
-            reject(err);
-          }
-        });
-        doc.end();
-      })
-      .catch((err) => reject(err));
-  });
+  await fn(doc);
+  const pdf = documentToArrayBuffer(doc);
+  doc.end();
+  for (const image of await pdf2png(await pdf)) {
+    expect(image).toMatchImageSnapshot({
+      failureThresholdType: 'percent',
+      failureThreshold,
+    });
+  }
 }
-
-export { runDocTest };

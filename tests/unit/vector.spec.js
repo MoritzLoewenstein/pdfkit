@@ -1,5 +1,5 @@
 import { stringToUint8Array } from 'uint8array-extras';
-import { beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
 
@@ -12,6 +12,21 @@ describe('Vector Graphics', () => {
       info: { CreationDate: new Date(Date.UTC(2018, 1, 1)) },
       compress: false,
     });
+  });
+
+  test('rounds only selected corners and clamps the radius to half the shorter side', () => {
+    const content = vi.spyOn(document, 'addContent');
+    document.roundedRect(0, 0, 100, 20, [0, 50, 5, 0]);
+    expect(content.mock.calls.flat()).toEqual([
+      '0 0 m',
+      '90 0 l',
+      '95.522847 0 100 4.477153 100 10 c',
+      '100 15 l',
+      '100 17.761424 97.761424 20 95 20 c',
+      '0 20 l',
+      '0 0 l',
+      'h',
+    ]);
   });
 
   describe('dash', () => {

@@ -1,22 +1,25 @@
-const PDFDocument = require('../');
-const fs = require('fs');
-const path = require('path');
+import { createWriteStream, readFileSync } from 'node:fs';
+import PDFDocument from '@moritzloewenstein/pdfkit';
 
-const doc = new PDFDocument({ pdfVersion: '1.4' });
+const doc = new PDFDocument({
+  font: 'DejaVuSans',
+  fontData: readFileSync(new URL('./fonts/DejaVuSans.ttf', import.meta.url)),
+  pdfVersion: '1.4',
+});
 
-doc.pipe(fs.createWriteStream('attachment.pdf'));
+doc.pipe(createWriteStream('attachment.pdf'));
 
 doc.info['Title'] = 'Attachment Test';
 
 // add an embedded file from file system
-doc.file(path.join(__dirname, 'images', 'test.png'), {
+doc.file(readFileSync(new URL('./images/test.png', import.meta.url)), {
   name: 'test.png',
   type: 'image/png',
   description: 'this is a test image',
 });
 
 // add some text
-doc.text(`This PDF contains three text files:
+doc.text(`This PDF contains three attachments:
 Two file attachment annotations and one embedded file.
 If you can see them (not every PDF viewer supports embedded files),
 hover over the paperclip to see its description!`);
@@ -24,7 +27,7 @@ hover over the paperclip to see its description!`);
 // add a file attachment annotation
 // first, declare the file to be attached
 const file = {
-  src: Buffer.from('buffered input!'),
+  src: new TextEncoder().encode('buffered input!'),
   name: 'embedded.txt',
   creationDate: new Date(2020, 3, 1),
 };

@@ -24,7 +24,9 @@ You can also try out an interactive in-browser demo of PDFKit [here](http://pdfk
 
 Installation uses the [npm](http://npmjs.org/) package manager. Just type the following command after installing npm.
 
-    npm install pdfkit
+    npm install @moritzloewenstein/pdfkit
+
+This fork is ESM-only. Use `import`; CommonJS `require()` is not supported.
 
 ## Features
 
@@ -67,107 +69,25 @@ Installation uses the [npm](http://npmjs.org/) package manager. Just type the fo
 ## Example
 
 ```javascript
-const PDFDocument = require("pdfkit");
-const fs = require("fs");
+import { readFile, writeFile } from 'node:fs/promises';
+import PDFDocument, { toBytes } from '@moritzloewenstein/pdfkit';
 
-// Create a document
-const doc = new PDFDocument();
-
-// Pipe its output somewhere, like to a file or HTTP response
-// See below for browser usage
-doc.pipe(fs.createWriteStream("output.pdf"));
-
-// Embed a font, set the font size, and render some text
-doc
-  .font("fonts/PalatinoBold.ttf")
-  .fontSize(25)
-  .text("Some text with an embedded font!", 100, 100);
-
-// Add an image, constrain it to a given size, and center it vertically and horizontally
-doc.image("path/to/image.png", {
-  fit: [250, 300],
-  align: "center",
-  valign: "center",
-});
-
-// Add another page
-doc.addPage().fontSize(25).text("Here is some vector graphics...", 100, 100);
-
-// Draw a triangle
-doc.save().moveTo(100, 150).lineTo(100, 250).lineTo(200, 250).fill("#FF3300");
-
-// Apply some transforms and render an SVG path with the 'even-odd' fill rule
-doc
-  .scale(0.6)
-  .translate(470, -380)
-  .path("M 250,75 L 323,301 131,161 369,161 177,301 z")
-  .fill("red", "even-odd")
-  .restore();
-
-// Add some text with annotations
-doc
-  .addPage()
-  .fillColor("blue")
-  .text("Here is a link!", 100, 100)
-  .underline(100, 100, 160, 27, { color: "#0000FF" })
-  .link(100, 100, 160, 27, "http://google.com/");
-
-// Finalize PDF file
+const fontData = await readFile('fonts/Roboto-Regular.ttf');
+const doc = new PDFDocument({ font: 'Roboto', fontData });
+doc.fontSize(25).text('Some text with an embedded font!');
+doc.image(await readFile('images/example.png'), { fit: [250, 300] });
+doc.addPage().circle(150, 150, 40).fill('#FF3300');
 doc.end();
+await writeFile('output.pdf', await toBytes(doc));
 ```
 
-[The PDF output from this example](http://pdfkit.org/demo/out.pdf) (with a few additions) shows the power of PDFKit — producing
-complex documents with a very small amount of code. For more, see the `demo` folder and the
-[PDFKit programming guide](http://pdfkit.org/docs/getting_started.html).
+For more, see the [examples](examples/README.md) and the [Getting Started guide](docs/getting_started.md).
 
 ## Browser Usage
 
-There are three ways to use PDFKit in the browser:
-
-- Use [Browserify](http://browserify.org/). See demo [source code](https://github.com/foliojs/pdfkit/blob/master/examples/browserify/browser.js) and [build script](https://github.com/foliojs/pdfkit/blob/master/package.json#L62)
-- Use [webpack](https://webpack.js.org/). See [complete example](https://github.com/foliojs/pdfkit/blob/master/examples/webpack).
-- Use prebuilt version. Distributed as `pdfkit.standalone.js` file in the [releases](https://github.com/foliojs/pdfkit/releases) or in the package `js` folder.
-
-In addition to PDFKit, you'll need somewhere to stream the output to. HTML5 has a
-[Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) object which can be used to store binary data, and
-get URLs to this data in order to display PDF output inside an iframe, or upload to a server, etc. In order to
-get a Blob from the output of PDFKit, you can use the [blob-stream](https://github.com/devongovett/blob-stream)
-module.
-
-The following example uses Browserify or webpack to load `PDFKit` and `blob-stream`. See [here](https://codepen.io/blikblum/pen/gJNWMg?editors=1010) and [here](https://codepen.io/blikblum/pen/YboVNq?editors=1010) for examples
-of prebuilt version usage.
-
-```javascript
-// require dependencies
-const PDFDocument = require("pdfkit");
-const blobStream = require("blob-stream");
-
-// create a document the same way as above
-const doc = new PDFDocument();
-
-// pipe the document to a blob
-const stream = doc.pipe(blobStream());
-
-// add your content to the document here, as usual
-
-// get a blob when you are done
-doc.end();
-stream.on("finish", function () {
-  // get a blob you can do whatever you like with
-  const blob = stream.toBlob("application/pdf");
-
-  // or get a blob URL for display in the browser
-  const url = stream.toBlobURL("application/pdf");
-  iframe.src = url;
-});
-```
-
-You can see an interactive in-browser demo of PDFKit [here](http://pdfkit.org/demo/browser.html).
-
-Note that in order to Browserify a project using PDFKit, you need to install the `brfs` module with npm,
-which is used to load built-in font data into the package. It is listed as a `devDependency` in
-PDFKit's `package.json`, so it isn't installed by default for Node users.
-If you forget to install it, Browserify will print an error message.
+Import the package with your browser bundler, fetch font bytes with `fetch`, and
+use `toBlob(doc)` after `doc.end()`. No Node.js polyfills or `blob-stream` are needed.
+Run `npm run dev` in this repository to try the editable playground.
 
 ## Documentation
 

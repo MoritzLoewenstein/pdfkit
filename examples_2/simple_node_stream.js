@@ -1,9 +1,13 @@
 import { createWriteStream, readFileSync } from 'node:fs';
-import PDFDocument from '../dist/pdfkit.js';
+import { PDFDocument } from '@moritzloewenstein/pdfkit';
 import { makeSimplePdf } from './simple_pdf.js';
 
-const robotoMonoData = readFileSync('public/fonts/RobotoMono-Regular.ttf');
-const robotoMonoItalicData = readFileSync('public/fonts/RobotoMono-Italic.ttf');
+const robotoMonoData = readFileSync(
+  new URL('../public/fonts/RobotoMono-Regular.ttf', import.meta.url),
+);
+const robotoMonoItalicData = readFileSync(
+  new URL('../public/fonts/RobotoMono-Italic.ttf', import.meta.url),
+);
 const FONT_DEFAULT = 'RobotoMono';
 const FONT_ITALIC = 'RobotoMonoItalic';
 const doc = new PDFDocument({

@@ -1,6 +1,8 @@
 .DS_Store
 node_modules
 dist
+dist-playground/
+public/docs/
 .amp/portals/*
 
 examples_2/simple_node.pdf

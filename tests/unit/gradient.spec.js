@@ -72,4 +72,18 @@ describe('Gradient', function () {
 >>`,
     ]);
   });
+
+  test('holds the last color from its stop through the end', () => {
+    const gradient = document.linearGradient(0, 0, 300, 0);
+    gradient.stop(0, 'green').stop(0.5, 'red');
+    document.fillColor(gradient).rect(0, 0, 300, 300).fill();
+
+    const fn = document.page.patterns[gradient.id].data.Shading.data.Function;
+    expect(fn.data.Bounds).toEqual([0.5]);
+    expect(fn.data.Encode).toEqual([0, 1, 0, 1]);
+    expect(fn.data.Functions[1].data).toMatchObject({
+      C0: [1, 0, 0],
+      C1: [1, 0, 0],
+    });
+  });
 });

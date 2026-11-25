@@ -5,23 +5,23 @@
 Installation uses the [npm](http://npmjs.org/) package manager. Just type the
 following command after installing npm.
 
-    npm install pdfkit
+    npm install @moritzloewenstein/pdfkit
 
 ### Creating a document
 
-Creating a PDFKit document is quite simple. Just require the `pdfkit` module
-in your JavaScript source file and create an instance of the
-`PDFDocument` class.
+Create a `PDFDocument` with in-memory data for its default font. In Node.js,
+your application can read the font before constructing the document:
 
-    const PDFDocument = require('pdfkit');
-    const doc = new PDFDocument();
+    import { createWriteStream, readFileSync } from 'node:fs';
+    import PDFDocument from '@moritzloewenstein/pdfkit';
 
-`PDFDocument` instances are readable Node streams. They don't get saved anywhere automatically,
-but you can call the `pipe` method to send the output of the PDF document to another
-writable Node stream as it is being written. When you're done with your document, call
-the `end` method to finalize it. Here is an example showing how to pipe to a file or an HTTP response.
+    const fontData = readFileSync('fonts/Roboto-Regular.ttf');
+    const doc = new PDFDocument({ font: 'Body', fontData });
 
-    doc.pipe(fs.createWriteStream('/path/to/file.pdf')); // write to PDF
+`doc.stream` is a Web `ReadableStream`. In Node.js, you can also use `pipe`
+to write to a file stream or an HTTP response. Call `end()` to finalize the PDF.
+
+    doc.pipe(createWriteStream('/path/to/file.pdf'));    // write to PDF
     doc.pipe(res);                                       // HTTP response
 
     // add stuff to PDF here using methods described below...
@@ -33,49 +33,34 @@ The `write` and `output` methods found in PDFKit before version 0.5 are now depr
 
 ## Using PDFKit in the browser
 
-PDFKit can be used in the browser as well as in Node! There are two ways to use PDFKit in the browser.
-The first is to create an app using an module bundler like [Browserify](http://browserify.org/) or [Webpack](https://webpack.js.org/).
-The second is to create a standalone pdfkit script as explained [here](https://github.com/foliojs/pdfkit/wiki/How-to-compile-standalone-PDFKit-for-use-in-the-browser).
+Load the font as bytes, then use `toBlob(doc)` to collect the PDF for a preview
+or download. Use `toBytes(doc)` instead to get a `Uint8Array`.
 
-Using PDFKit in the browser is exactly the same as using it in Node, except you'll want to pipe the
-output to a destination supported in the browser, such as a
-[Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob). Blobs can be used
-to generate a URL to allow display of generated PDFs directly in the browser via an `iframe`, or they can
-be used to upload the PDF to a server, or trigger a download in the user's browser.
+    import PDFDocument, { toBlob } from '@moritzloewenstein/pdfkit';
 
-To get a Blob from a `PDFDocument`, you should pipe it to a [blob-stream](https://github.com/devongovett/blob-stream),
-which is a module that generates a Blob from any Node-style stream. The following example uses Browserify to load
-`PDFKit` and `blob-stream`, but if you're not using Browserify, you can load them in whatever way you'd like (e.g. script tags).
-
-    // require dependencies
-    const PDFDocument = require('pdfkit');
-    const blobStream  = require('blob-stream');
-
-    // create a document the same way as above
-    const doc = new PDFDocument;
-
-    // pipe the document to a blob
-    const stream = doc.pipe(blobStream());
-
-    // add your content to the document here, as usual
-
-    // get a blob when you're done
+    const fontData = await (await fetch('/fonts/Roboto-Regular.ttf')).arrayBuffer();
+    const doc = new PDFDocument({ font: 'Roboto', fontData });
+    doc.text('Hello, PDF!');
     doc.end();
-    stream.on('finish', function() {
-      // get a blob you can do whatever you like with
-      const blob = stream.toBlob('application/pdf');
+    iframe.src = URL.createObjectURL(await toBlob(doc));
 
-      // or get a blob URL for display in the browser
-      const url = stream.toBlobURL('application/pdf');
-      iframe.src = url;
-    });
+The helpers consume `doc.stream`; don't also pipe or read from the same stream.
+Revoke the object URL once you no longer need it.
 
-You can see an interactive in-browser demo of PDFKit [here](http://pdfkit.org/demo/browser.html).
+This fork does not bundle built-in fonts. Provide the default font name and
+its data as `font` and `fontData`; see [Fonts](text.md#fonts).
 
-Note that in order to Browserify a project using PDFKit, you need to install the `brfs` module with npm,
-which is used to load built-in font data into the package. It is listed as a `devDependencies` in
-PDFKit's `package.json`, so it isn't installed by default for Node users.
-If you forget to install it, Browserify will print an error message.
+## Document options
+
+Set `pageLayout` to control how a PDF viewer displays pages: `singlePage`,
+`oneColumn`, `twoColumnLeft`, `twoColumnRight`, `twoPageLeft`, or `twoPageRight`.
+In the two-column and two-page layouts, `Left` and `Right` indicate which side
+contains odd-numbered pages.
+
+Set `objectStreams: true` to pack non-stream objects into object streams and
+replace the cross-reference table with a cross-reference stream. This can make
+documents with many objects smaller. It requires `pdfVersion: '1.5'` or later
+and cannot be combined with encryption or PDF/A-1.
 
 ## Adding pages
 
@@ -85,7 +70,9 @@ quite simple!
 
     doc.addPage()
 
-To add some content every time a page is created, either by calling `addPage()` or automatically, you can use the `pageAdded` event.
+Pass `onPageAdded: doc => doc.text('Page Title')` in the constructor options
+to draw on every new page, including the automatic first page. To handle pages
+added after construction only, you can also use the `pageAdded` event.
 
     doc.on('pageAdded', () => doc.text("Page Title"));
 
@@ -157,6 +144,7 @@ numbers to a document.
     let i;
     let end;
     const doc = new PDFDocument({
+      font: 'Body', fontData,
       bufferPages: true});
 
     // add some content...
@@ -179,12 +167,23 @@ numbers to a document.
     // doc.end() will call it for you automatically.
     doc.end();
 
+## Page labels
+
+Call `addPageLabel(pageIndex, options)` with the zero-based index where a range
+starts. Labels change what PDF viewers show, not what is drawn on the page.
+
+    doc.addPageLabel(0, { style: 'lowerRoman' }); // i, ii
+    doc.addPageLabel(2, { style: 'decimal' });    // 1, 2, …
+    doc.addPageLabel(10, { style: 'decimal', prefix: 'A-', start: 3 }); // A-3, A-4, …
+
+`style` can be `decimal`, `upperRoman`, `lowerRoman`, `upperAlpha`, or
+`lowerAlpha`. Without a style, only `prefix` is shown. `start` defaults to 1.
+
 ## Setting default font
 
-The default font is 'Helvetica'. It can be configured by passing `font` option
-
-    // use Courier font by default
-    const doc = new PDFDocument({font: 'Courier'});
+Pass a name as `font` and its bytes or a parsed fontkit font as `fontData`.
+The name becomes a registered alias within the document. See [Fonts](text.md#fonts)
+for supported formats and how to select additional fonts.
 
 ## Setting document metadata
 
@@ -201,6 +200,8 @@ capitalized.
 - `Author` - the name of the author
 - `Subject` - the subject of the document
 - `Keywords` - keywords associated with the document
+- `Creator` - the tool that created the source document
+- `Producer` - the tool that generated the PDF
 - `CreationDate` - the date the document was created (added automatically by PDFKit)
 - `ModDate` - the date the document was last modified
 
@@ -297,7 +298,9 @@ For PDF/A-2 and PDF/A-3, the `pdfVersion` needs to be set to at least `1.7` and 
 
 In order to verify the generated document for PDF/A and its subsets conformance, veraPDF is an excellent open source validator.
 
-Please note that PDF/A requires fonts to be embedded, as such the standard fonts PDFKit comes with cannot be used because they are in AFM format, which only provides neccessary metrics, without the font data. You should use `registerFont()` and use embeddable fonts such as `ttf`.
+PDF/A requires embedded fonts. Supply embeddable font data (for example, a
+TrueType font) as `fontData` for the document's default font, and pass any
+additional font sources to `font()` or `registerFont()`.
 
 ### Adding content
 

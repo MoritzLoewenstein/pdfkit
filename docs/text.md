@@ -29,6 +29,11 @@ doing that for long pieces of text. PDFKit can also automatically wrap text
 into multiple columns.
 
 The text will automatically wrap unless you set the `lineBreak` option to `false`.
+A line can break wherever the Unicode line-breaking rules allow, including after
+a hyphen or slash. Set `lineBreak` to `'whitespace'` to keep words such as
+`design-system` or URLs together when they fit on a line. This mode still allows
+breaks at whitespace, soft hyphens and zero-width spaces; words too wide for a
+line are still split.
 By default it will wrap to the page margin, but the `width` option allows
 you to set a different width the text should be wrapped to.
 If you set the `height` option, the text will be clipped to the number of
@@ -83,7 +88,7 @@ PDFKit has many options for controlling the look of text added to PDF
 documents, which can be passed to the `text` method. They are enumerated
 below.
 
-* `lineBreak` - set to `false` to disable line wrapping all together
+* `lineBreak` - set to `false` to disable wrapping, or `'whitespace'` to wrap only at whitespace, soft hyphens and zero-width spaces when a word fits on a line
 * `width` - the width that text should be wrapped to (by default, the page width minus the left and right margin)
 * `height` - the maximum height that text should be clipped to
 * `rotation` - the rotation of the text in degrees (by default 0)
@@ -103,7 +108,9 @@ below.
 * `goTo` - go to anchor (shortcut to create an annotation)
 * `destination` - create anchor to this text
 * `underline` - whether to underline the text
+* `underlineOffset` - distance in PDF points to move the underline; positive values move it down, and negative values move it up
 * `strike` - whether to strike out the text
+* `decorationThickness` - thickness of the underline and strikethrough in PDF points (defaults to a value based on font size)
 * `oblique` - whether to slant the text (angle in degrees or `true`)
 * `baseline` - the vertical alignment of the text with respect to its insertion point (values as [canvas textBaseline](https://www.w3schools.com/tags/canvas_textbaseline.asp))
 * `continued` - whether the text segment will be followed immediately by another segment. Useful for changing styling in the middle of a paragraph.
@@ -150,6 +157,7 @@ Lists use the following additional options:
 * `bulletRadius`
 * `textIndent`
 * `bulletIndent`
+* `start` - starting number for the top level of a `numbered` or `lettered` list. The default is `1` (`A` for lettered lists); for example, `3` starts at `C`. Nested lists still start at `1` (`A`).
 
 ## Rich Text
 
@@ -194,71 +202,33 @@ Here is the output:
 
 ![5]()
 
+With `continued` text, `center` and `right` alignment apply to each segment
+rather than to the line as a whole, so segments can overlap.
+
 ## Fonts
 
-The PDF format defines 14 standard fonts that can be used in PDF documents. PDFKit supports each of them out of the box.
-Besides Symbol and Zapf Dingbats this includes 4 styles (regular, bold, italic/oblique, bold+italic) of Helvetica,
-Courier, and Times. To switch between standard fonts, call the `font` method with the corresponding Label:
+This fork embeds fonts from memory instead of shipping the 14 standard PDF
+fonts or reading font files from disk. It supports TrueType (`.ttf`), OpenType
+(`.otf`), WOFF, WOFF2, TrueType Collection (`.ttc`), and Datafork TrueType
+(`.dfont`) fonts.
 
-* `'Courier'`
-* `'Courier-Bold'`
-* `'Courier-Oblique'`
-* `'Courier-BoldOblique'`
-* `'Helvetica'`
-* `'Helvetica-Bold'`
-* `'Helvetica-Oblique'`
-* `'Helvetica-BoldOblique'`
-* `'Symbol'`
-* `'Times-Roman'`
-* `'Times-Bold'`
-* `'Times-Italic'`
-* `'Times-BoldItalic'`
-* `'ZapfDingbats'`
+Supply a name in `options.font` and the default font data in `options.fontData`
+when creating a document. To change fonts, call `doc.font()` with a `Uint8Array`,
+an `ArrayBuffer`, or an already-parsed [fontkit](https://github.com/foliojs/fontkit)
+font instance. For collection bytes, pass the PostScript name of the desired
+face as the second argument (or set `options.fontFamily` for the default font).
 
-The PDF format also allows fonts to be embedded right in the document. PDFKit supports
-embedding TrueType (`.ttf`), OpenType (`.otf`), WOFF, WOFF2, TrueType Collection (`.ttc`),
-and Datafork TrueType (`.dfont`) fonts.
+    const goodDog = await fetch('/fonts/GoodDog.ttf').then(res => res.arrayBuffer());
+    const doc = new PDFDocument({ font: 'Body', fontData: goodDog });
+    doc.fontSize(18).text('This is Good Dog!');
 
-To change the font used to render text, just call the `font` method. If you
-are using a standard PDF font, just pass the name to the `font` method.
-Otherwise, pass the path to the font file, or a `Buffer` containing the font data.
-If the font is a collection font (`.ttc` and `.dfont` files), meaning that it
-contains multiple styles in the same file, you should pass the name of the style
-to be extracted from the collection.
+    const chalkboard = await fetch('/fonts/Chalkboard.ttc').then(res => res.arrayBuffer());
+    doc.font(chalkboard, 'Chalkboard-Bold').text('This is Chalkboard.');
 
-Here is an example showing how to set the font in each case.
+Use `registerFont()` to give an in-memory font source a reusable alias:
 
-    // Set the font size
-    doc.fontSize(18);
-
-    // Using a standard PDF font
-    doc.font('Times-Roman')
-       .text('Hello from Times Roman!')
-       .moveDown(0.5);
-
-    // Using a TrueType font (.ttf)
-    doc.font('fonts/GoodDog.ttf')
-       .text('This is Good Dog!')
-       .moveDown(0.5);
-
-    // Using a collection font (.ttc or .dfont)
-    doc.font('fonts/Chalkboard.ttc', 'Chalkboard-Bold')
-       .text('This is Chalkboard, not Comic Sans.');
-
-The output of this example looks like this:
-
-![6](images/fonts.png)
-
-Another nice feature of the PDFKit font support, is the ability to register a
-font file under a name for use later rather than entering the path to the font
-every time you want to use it.
-
-    // Register a font
-    doc.registerFont('Heading Font', 'fonts/Chalkboard.ttc', 'Chalkboard-Bold');
-
-    // Use the font later
-    doc.font('Heading Font')
-       .text('This is a heading.');
+    doc.registerFont('Heading', chalkboard, 'Chalkboard-Bold');
+    doc.font('Heading').text('This is a heading.');
 
 That's about all there is too it for text in PDFKit. Let's move on now to
 images.

@@ -9,7 +9,7 @@ export default defineConfig({
     sourcemap: true,
     lib: {
       entry: resolve(__dirname, 'lib/document.js'),
-      name: 'PDFDocument',
+      formats: ['es'],
     },
   },
   test: {
@@ -22,12 +22,19 @@ export default defineConfig({
           exclude: [
             'tests/unit/acroform.spec.js',
             'tests/unit/annotations.spec.js',
-            'tests/unit/attachments.spec.js',
-            'tests/unit/image.spec.js',
-            'tests/unit/trailer.spec.js',
           ],
           name: 'unit',
           environment: 'node',
+        },
+      },
+      {
+        test: {
+          name: 'visual',
+          environment: 'node',
+          globals: true,
+          include: ['tests/visual/**/*.spec.js'],
+          setupFiles: ['tests/visual/setup.js'],
+          testTimeout: 30_000,
         },
       },
       {

@@ -179,4 +179,85 @@ describe('LineWrapper', () => {
     wrapper.wrap('B', {});
     expect(pageBreaks).toBeGreaterThanOrEqual(1);
   });
+
+  test('runs each section hook once when clipping at the height limit', () => {
+    const height = document.currentLineHeight(true);
+    const wrapper = new LineWrapper(document, { width: 300, height });
+    const events = [];
+    wrapper.on('sectionStart', () => events.push('start'));
+    wrapper.on('line', () => {
+      document.y += height;
+    });
+    wrapper.on('sectionEnd', () => events.push('end'));
+    wrapper.wrap('first\nsecond', {});
+    expect(events).toEqual(['start', 'end']);
+  });
+
+  test.each([
+    { columns: 50 },
+    { columns: 3, columnGap: 400 },
+    { indent: 500, indentAllLines: true },
+    { columns: 50, characterSpacing: 2 },
+  ])('consumes every character with a negative line width (%o)', (layout) => {
+    let pages = 1;
+    document.on('pageAdded', () => {
+      if (++pages > 20) throw new Error('text keeps adding pages');
+    });
+    const options = { width: 100, ...layout };
+    const wrapper = new LineWrapper(document, options);
+    const lines = [];
+    wrapper.on('line', (line) => {
+      lines.push(line);
+      document.y += document.currentLineHeight(true);
+    });
+    wrapper.wrap('hello world', options);
+    expect(lines.join('')).toBe('hello world');
+  });
+
+  test.each([false, true])(
+    'keeps all lines indented through paragraphs and page breaks (orphan: %s)',
+    (orphan) => {
+      const options = { width: 300, indent: 50, indentAllLines: true };
+      document.x = 30;
+      document.y = document.page.maxY() - (orphan ? 2 : 20);
+      const wrapper = new LineWrapper(document, options);
+      let pages = 1;
+      document.on('pageAdded', () => pages++);
+      wrapper.on('line', () => {
+        expect(document.x).toBe(80);
+        expect(wrapper.lineWidth).toBe(250);
+        document.y += document.currentLineHeight(true);
+      });
+      wrapper.wrap('word word\n'.repeat(150), options);
+      expect(pages).toBeGreaterThan(2);
+      expect(document.x).toBe(30);
+    },
+  );
+
+  test.each([
+    ['a ', 'design-system', 'a design-', 'system'],
+    [
+      'see ',
+      'https://github.com/foliojs/pdfkit',
+      'see https://github.com/foliojs/',
+      'pdfkit',
+    ],
+  ])(
+    'keeps "%s%s" in one piece with whitespace wrapping',
+    (prefix, word, first, second) => {
+      const wrap = (lineBreak) => {
+        const options = {
+          width: document.widthOfString(prefix + word) - 1,
+          lineBreak,
+        };
+        const wrapper = new LineWrapper(document, options);
+        const lines = [];
+        wrapper.on('line', (line) => lines.push(line.trimEnd()));
+        wrapper.wrap(prefix + word, options);
+        return lines;
+      };
+      expect(wrap()).toEqual([first, second]);
+      expect(wrap('whitespace')).toEqual([prefix.trim(), word]);
+    },
+  );
 });

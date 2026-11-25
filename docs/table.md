@@ -340,6 +340,7 @@ is added to the document. This way, any calls to `text` or `table` will be place
 - `rowStyles` - Row definitions of the table. (default `*`)
 - `defaultStyle` - Defaults to apply to every cell
 - `data` - The data to render (not required, you can call `.row()`). This can be an iterable (async or sync)
+- `headerRows` - Number of initial rows to repeat at the top of each new table page (default `0`). Repeats are skipped if the next row would not fit below them. Cells that span from a header row into a body row are not repeated. For accessible headers, set `type: 'TH'` and `scope` separately.
 - `debug` - Whether to show the debug lines for all the cells (default `false`)
 
 ## Cell options
@@ -351,14 +352,27 @@ is added to the document. This way, any calls to `text` or `table` will be place
 - `border` - The border for the cell (default `1pt`)
 - `borderColor` - The border colors for the cell (default `black`)
 - `font` - Font options for the cell
+  - `src` - A font registered with `doc.registerFont()`, or font data as a `Uint8Array` or `ArrayBuffer`, as accepted by `doc.font()`
+  - `family` - The face or variation to select from a font source, as in the second argument to `doc.font()`. It only applies when the cell, its row, or its column provides a `src`. To select a font already registered by name, use `src`.
+  - `size` - The font size
 - `backgroundColor` - Set the background color of the cell
 - `align` - The alignment of the cell text (default `{x: 'left', y: 'top'}`)
 - `textStroke` - The text stroke (default `0`)
 - `textStrokeColor` - Sets the text stroke color of the cells text (default `black`)
 - `textColor` - Sets the text color of the cells text (default `black`)
 - `type` - Sets the cell type (for accessibility) (default `TD`)
+- `scope` - The scope of a `TH` cell in a tagged table: `Row`, `Column`, or `Both`
 - `textOptions` - Sets any text options you wish to provide (such as rotation)
 - `debug` - Whether to show the debug lines for the cell (default `false`)
+
+Column, row, and cell font options are combined in that order. A more specific `src` replaces both the inherited source and its `family`; a `family` or `size` on its own refines the inherited font.
+
+To use a registered font (where `iconFontData` contains the font bytes):
+
+    doc.registerFont('Icons', iconFontData);
+    doc.table({
+        data: [['Label', { text: '\uf118', font: { src: 'Icons', size: 20 } }]],
+    });
 
 ## Column options
 

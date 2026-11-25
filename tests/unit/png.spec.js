@@ -1,38 +1,65 @@
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
+import { inflateSync } from 'node:zlib';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import PDFDocument from '../../lib/document';
 import PNGImage from '../../lib/image/png';
 import PDFReference from '../../lib/reference';
+import { logData } from './helpers';
+
+const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
+const streamFor = (data, ref) =>
+  data[data.indexOf(`${ref.id} ${ref.gen} obj`) + 3];
 
 describe('PNGImage', () => {
   let document;
 
   const createImage = (fileName) => {
-    const img = new PNGImage(fs.readFileSync(fileName), 'I1');
-    // noop data manipulation methods
-    img.loadIndexedAlphaChannel = () => {
-      if (img.image.transparency.indexed) {
-        img.alphaChannel = {};
-        img.finalize();
-      }
-    };
-    img.splitAlphaChannel = () => {
-      if (img.image.hasAlphaChannel) {
-        img.alphaChannel = {};
-        img.finalize();
-      }
-    };
-    img.decodeData = () => {
-      img.finalize();
-    };
-    const finalizeFn = img.finalize;
-    vi.spyOn(img, 'finalize').mockImplementation(() => finalizeFn.call(img));
+    const img = new PNGImage(new Uint8Array(fs.readFileSync(fileName)), 'I1');
+    vi.spyOn(img, 'finalize');
     img.embed(document);
     return img;
   };
 
   beforeEach(() => {
     document = new PDFDocument(globalThis.DEFAULT_OPTIONS);
+  });
+
+  test('writes matching palette indices and alpha for the Adam7 tRNS fixture', () => {
+    const data = logData(document);
+    const { obj } = createImage('./tests/images/issue-414-interlaced.png');
+    const palette = streamFor(data, obj.data.ColorSpace[3]);
+    const samples = inflateSync(streamFor(data, obj));
+    const alpha = inflateSync(streamFor(data, obj.data.SMask));
+
+    expect(obj.data.DecodeParms.data.Predictor).toBe(1);
+    expect(samples).toHaveLength(408 * 326);
+    const rgb = new Uint8Array(samples.length * 3);
+    for (let i = 0; i < samples.length; i++) {
+      rgb.set(palette.subarray(3 * samples[i], 3 * samples[i] + 3), i * 3);
+    }
+    // Reference pixel hashes from ImageMagick, excluding PNG row filters.
+    expect(sha256(rgb)).toBe(
+      '96ca2580a4a705bde15651548b39c6ab280a30c72256272450fbd8e2f4cf46ce',
+    );
+    expect(sha256(alpha)).toBe(
+      '3cba890283eeafa8d907f9f29c539aa0638fd9993169ee4304fdd1ca1a6fc30b',
+    );
+    document.end();
+    expect(data.at(-1)).toBe('%%EOF');
+  });
+
+  test('expands each packed 1-bit index and ignores scanline padding', () => {
+    const data = logData(document);
+    const { obj } = createImage(
+      './tests/images/pallete-transparent-white-1bit.png',
+    );
+    const alpha = inflateSync(streamFor(data, obj.data.SMask));
+    expect(obj.data.BitsPerComponent).toBe(1);
+    expect(obj.data.DecodeParms.data.Predictor).toBe(15);
+    expect(sha256(alpha)).toBe(
+      '11aaa86ea5a4ffe524b478ba7f27ff58de81f5754ff27a36a94ebd97f9665a83',
+    );
   });
 
   test('RGB', () => {
@@ -122,7 +149,6 @@ describe('PNGImage', () => {
       ColorSpace: 'DeviceRGB',
       Filter: 'FlateDecode',
       Height: 400,
-      Length: 47715,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 409,
@@ -135,7 +161,6 @@ describe('PNGImage', () => {
       Decode: [0, 1],
       Filter: 'FlateDecode',
       Height: 400,
-      Length: 16,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 409,
@@ -160,7 +185,6 @@ describe('PNGImage', () => {
       ColorSpace: 'DeviceRGB',
       Filter: 'FlateDecode',
       Height: 65,
-      Length: 28537,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 175,
@@ -173,7 +197,6 @@ describe('PNGImage', () => {
       Decode: [0, 1],
       Filter: 'FlateDecode',
       Height: 65,
-      Length: 16,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 175,
@@ -254,7 +277,6 @@ describe('PNGImage', () => {
       Decode: [0, 1],
       Filter: 'FlateDecode',
       Height: 32,
-      Length: 16,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 32,
@@ -377,7 +399,6 @@ describe('PNGImage', () => {
       ColorSpace: 'DeviceGray',
       Filter: 'FlateDecode',
       Height: 112,
-      Length: 9922,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 112,
@@ -390,7 +411,6 @@ describe('PNGImage', () => {
       Decode: [0, 1],
       Filter: 'FlateDecode',
       Height: 112,
-      Length: 16,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 112,
@@ -415,7 +435,6 @@ describe('PNGImage', () => {
       ColorSpace: 'DeviceGray',
       Filter: 'FlateDecode',
       Height: 32,
-      Length: 181,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 32,
@@ -448,7 +467,6 @@ describe('PNGImage', () => {
       ColorSpace: ['Indexed', 'DeviceRGB', 255, expect.any(PDFReference)],
       Filter: 'FlateDecode',
       Height: 32,
-      Length: 674,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 32,
@@ -481,7 +499,6 @@ describe('PNGImage', () => {
       ColorSpace: 'DeviceRGB',
       Filter: 'FlateDecode',
       Height: 32,
-      Length: 242,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 32,
@@ -514,7 +531,6 @@ describe('PNGImage', () => {
       ColorSpace: 'DeviceRGB',
       Filter: 'FlateDecode',
       Height: 32,
-      Length: 522,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 32,
@@ -547,7 +563,6 @@ describe('PNGImage', () => {
       ColorSpace: 'DeviceRGB',
       Filter: 'FlateDecode',
       Height: 32,
-      Length: 288,
       Subtype: 'Image',
       Type: 'XObject',
       Width: 32,

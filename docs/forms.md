@@ -2,13 +2,12 @@
 
 Forms are an interactive feature of the PDF format. Forms make it possible to
 add form annotations such as text fields, combo boxes, buttons and actions.
-Before addings forms to a PDF you must call the document `initForm()` method.
+Before adding forms to a PDF you must call the document `initForm()` method.
 
-- `initForm()` - Must be called before adding a form annotation to the document.
+- `initForm(options)` - Must be called before adding a form annotation to the document. See [Font](#font) for the `embedFonts` option.
 
 ```javascript
-doc.font('Helvetica'); // establishes the default form field font
-doc.initForm();
+doc.initForm(); // uses the current document font as the default form field font
 ```
 
 ## Form Annotation Methods
@@ -16,12 +15,15 @@ doc.initForm();
 Form annotations are added using the following document methods.
 
 - `formText( name, x, y, width, height, options)`
-- `formPushButton( name, x, y, width, height, name, options)`
+- `formPushButton( name, x, y, width, height, options)`
 - `formCombo( name, x, y, width, height, options)`
 - `formList( name, x, y, width, height, options)`
+- `formRadioButton( name, x, y, width, height, options)`
+- `formCheckbox( name, x, y, width, height, options)`
 
 The above methods call the `formAnnotation` method with
-type set to one of `text`, `pushButton`, `radioButton`, `combo` or `list`.
+type set to one of `text`, `pushButton`, `radioButton`, `checkbox`, `combo`
+or `list`.
 
 - `formAnnotation( name, type, x, y, width, height, options)`
 
@@ -35,10 +37,14 @@ information on `name` in the **Field Names** section below.
 
 ### `options` Parameter
 
-#### Common Options
+#### Common Annotation Options
 
-Form Annotation `options` that are common across all form annotation types are:
+The following `options` are accepted by all form annotation methods:
 
+- `parent` [_PDFReference_] - Parent field returned by `formField`.
+- `structParent` [_PDFStructureElement_] - Structure element returned by `doc.struct()`.
+  Use a separate `Form` element for each widget in a tagged PDF. This is distinct
+  from `parent`, which controls the form field hierarchy.
 - `required` [_boolean_] - The field must have a value by the time the form is submitted.
 - `noExport` [_boolean_] - The field will not be exported if a form is submitted.
 - `readOnly` [_boolean_] - The user may not change the value of the field, and
@@ -47,22 +53,68 @@ Form Annotation `options` that are common across all form annotation types are:
 - `value` [_number|string_] - The field's value.
 - `defaultValue` [_number|string_] - The default value to which the field
   reverts if a reset-form action is executed.
+- `alternateName` [_string_] - Alternate field name (`TU`), used as the field's
+  accessible name or tooltip. Use a meaningful description, not just the
+  internal field name.
+- `backgroundColor` - Field background color.
+- `borderColor` - Field border color.
+- `fontSize` [_number_] - Sets the font size used in the field appearance string.
+  The default, `0`, means auto sizing. An explicit size applies even when the
+  field uses the default form font.
+- `hidden` [_boolean_] - Builds the field starting hidden, instead of the
+  usual default of visible and printable, for a field an interactive action
+  (see `onClick` below) will reveal later.
 
-Some form annotations have `color` options. You can use an array of RGB values,
-a hex color, or a named CSS color value for that option.
+Color options accept an array of RGB values, a hex color, or a named CSS color.
+Method-specific options listed below are accepted in addition to these common
+options.
 
-- `backgroundColor` - field background color
-- `borderColor` - field border color
+#### Field Actions
+
+These options are accepted by all form annotation methods. Each takes trusted
+JavaScript to run when the event occurs, given as a string or as a function:
+
+- `onClick` - The mouse button is released inside the field.
+- `onMouseDown` - The mouse button is pressed inside the field.
+- `onMouseEnter` - The cursor enters the field.
+- `onMouseExit` - The cursor leaves the field.
+- `onFocus` - The field receives the input focus.
+- `onBlur` - The field loses the input focus.
+
+```js
+doc.formPushButton('btn1', 10, 200, 100, 30, {
+  label: 'Test Button',
+  onClick: 'app.alert("clicked");'
+});
+```
+
+A function is written into the document as its source text and runs in the
+viewer, not where the document was generated, so it cannot use variables or
+functions from the surrounding program. `this` is the document, and the
+viewer's own globals, such as `app`, are in scope:
+
+```js
+doc.formPushButton('btn1', 10, 200, 100, 30, {
+  label: 'Test Button',
+  onClick: function () {
+    app.alert('clicked');
+    this.getField('otherField').value = 'updated from btn1';
+  }
+});
+```
+
+Write the handler with `function` syntax; an arrow function cannot take the
+`this` binding.
 
 #### Text Field Options
 
-- `align` [_string_] - Sets the alignment to `left`,
-  `center` or `right`.
+These options are accepted by `formText`:
+
+- `align` [_string_] - Sets the alignment to `left`, `center` or `right`.
 - `multiline` [_boolean_] - Allows the field to have multiple lines of text.
 - `password` [_boolean_] - The text will be masked (_e.g._ with asterisks).
-- `noSpell` [_boolean_] - If set, text entered in the field is not spell-checked
+- `noSpell` [_boolean_] - If set, text entered in the field is not spell-checked.
 - `format` [_object_] - See the section on **Text Field Formatting** below.
-- `fontSize` [_number_] - Sets the fontSize (default or 0 means auto sizing)
 
 ```js
 doc.formText('leaf2', 10, 60, 200, 40, {
@@ -75,13 +127,17 @@ doc.formText('leaf2', 10, 60, 200, 40, {
 });
 ```
 
-#### Combo and List Field Options
+#### Combo Field Options
 
+These options are accepted by `formCombo`:
+
+- `select` [_array_] - Array of choices to display in the combo field.
+- `align` [_string_] - Sets the alignment to `left`, `center` or `right`.
+- `edit` [_boolean_] - Allows the user to enter a value in the field.
 - `sort` [_boolean_] - The field options will be sorted alphabetically.
-- `edit` [_boolean_] - (combo only) Allow the user to enter a value in the field.
-- `multiSelect` [_boolean_] - Allow more than one choice to be selected.
-- `noSpell` [_boolean_] - (combo only) If set and `edit` is true, text entered in the field is not spell-checked.
-- `select` [_array_] - Array of choices to display in the combo or list form field.
+- `multiSelect` [_boolean_] - Allows more than one choice to be selected.
+- `noSpell` [_boolean_] - If set and `edit` is true, text entered in the field
+  is not spell-checked.
 
 ```js
 opts = {
@@ -93,10 +149,23 @@ opts = {
 doc.formCombo('ch1', 10, y, 100, 20, opts);
 ```
 
-#### Button Field Options
+#### List Field Options
+
+These options are accepted by `formList`:
+
+- `select` [_array_] - Array of choices to display in the list field.
+- `align` [_string_] - Sets the alignment to `left`, `center` or `right`.
+- `sort` [_boolean_] - The field options will be sorted alphabetically.
+- `multiSelect` [_boolean_] - Allows more than one choice to be selected.
+
+#### Push Button Field Options
+
+These options are accepted by `formPushButton`:
 
 - `label` [_string_] - Sets the label text. You can also set an icon, but for
   this you will need to 'expert-up' and dig deeper into the PDF Reference manual.
+- `onClick` [_string | function_] - JavaScript to run when the button is
+  clicked. See [Field Actions](#field-actions).
 
 ```js
 var opts = {
@@ -105,6 +174,36 @@ var opts = {
 };
 doc.formPushButton('btn1', 10, 200, 100, 30, opts);
 ```
+
+#### Radio Button Field Options
+
+These options are accepted by `formRadioButton`:
+
+- `toggleToOffButton` [_boolean_] - Allows a selected radio button to be toggled
+  off by clicking it again.
+
+#### Checkbox Field Options
+
+`formCheckbox` accepts the common annotation options.
+
+### Form Field Options
+
+`formField( name, options )` creates an invisible field node and accepts these
+options:
+
+- `parent` [_PDFReference_] - Parent field returned by `formField`.
+- `required` [_boolean_] - The field must have a value by the time the form is submitted.
+- `noExport` [_boolean_] - The field will not be exported if a form is submitted.
+- `readOnly` [_boolean_] - The user may not change the value of the field.
+- `value` [_number|string_] - The field's value.
+- `defaultValue` [_number|string_] - The default value to which the field
+  reverts if a reset-form action is executed.
+- `backgroundColor` - Field background color.
+- `borderColor` - Field border color.
+- `fontSize` [_number_] - Sets the font size used in the field appearance string.
+
+Numeric values and defaults in text and choice fields are stored as text. For example,
+`value: 0` and `value: '0'` set the same field value.
 
 ### Text Field Formatting
 
@@ -217,8 +316,7 @@ Create form fields using the document method:
 button_ --
 
 ```javascript
-doc.font('Helvetica'); // establishes the default font
-doc.initForm();
+doc.initForm(); // uses the current document font as the default form field font
 
 let rootField = doc.formField('rootField');
 let child1Field = doc.formField('child1Field', { parent: rootField });
@@ -250,27 +348,30 @@ doc.formPushButton('btn1', 10, 200, 100, 30, opts);
 
 The output of this example looks like this.
 
-![0](images/Forms.png)
+![Example form](images/acroforms.png)
 
 ### Advanced Form Field Use
 
-Forms can be quite complicated and your needs will likely grow to sometimes need
-to directly specify the attributes that will go into the Form Annotation or
-Field dictionaries. Consult the **PDF Reference** and set these attributes in
-the `options` object. Any options that are not listed above will be added
-directly to the corresponding PDF Object.
+Older implementations used to pass all unknown options to the internal PDF object structure. A small set of direct PDF dictionary escape hatches is still recognized: `Ff`, `MK.CA`, and `AA` when a `format` option is used but its use is discouraged and likely will be removed in future versions.
+
+If an option is not supported, open an issue on Github and it will be considered for addition to the API.
 
 ## Font
 
 The font used for a Form Annotation is set using the `document.font` method.
 Yes that's the same method as is used when setting the text font.
 
-The `font` method must be called before `initForm` and may be called before `formField` or any of the form annotation methods.
+`initForm` uses the current font as the default. Call `font` before `initForm`
+to change the default, or before `formField` or a form annotation method to
+use a different font for that field.
 
 ```js
-doc.font('Courier');
+doc.font(fontBytes);
 doc.formText('myfield', 10, 10, 200, 20);
 ```
+
+Pass `{ embedFonts: true }` to `initForm` to embed full copies of the fonts used
+in the form. See [Form Field Appearances](#form-field-appearances) for when to use this.
 
 ## Named JavaScript
 
@@ -299,6 +400,23 @@ The `NeedAppearances` flag may not be honored by all PDF viewers.
 Some form documents may not need to generate appearances. This may be the case
 for text Form Annotations that initially have no value. This is not true for
 push button widget annotations. Please test
+
+With a custom font, a viewer building the appearance this way may show the
+field in a substitute font: the font PDFKit embeds for page content is
+subsetted and addressed by glyph id, which gives the viewer no way to resolve
+the field's text itself. Passing `embedFonts` to `initForm` embeds a
+complete copy of each font used in a field, with a character map viewers can
+use for glyphs covered by both the font and WinAnsi encoding:
+
+```js
+doc.font(fontBytes);
+doc.initForm({ embedFonts: true });
+```
+
+That copy holds the whole font rather than the glyphs used so far, so it adds
+roughly the size of the font file to the document, per font. It is off by
+default for that reason, and only affects custom fonts — the standard 14
+fonts are not embedded at all.
 
 ### Document JavaScript
 

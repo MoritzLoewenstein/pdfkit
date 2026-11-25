@@ -26,6 +26,16 @@ A custom icon can be set using option `Name` property. Possible values are:
 `'Comment'`, `'Key'`, `'Note'`, `'Help'`, `'NewParagraph'`, `'Paragraph'`
 and `'Insert'`.
 
+When supplying PDF dictionary entries in `options`, use their exact spelling
+and case (for example, `Name` rather than `name`). PDFKit does not capitalize
+these keys or change the options object. PDFKit-specific options such as
+`color` and `structParent` use their documented casing.
+
+In a tagged PDF, pass a structure element as `structParent` to associate the
+annotation with it. For a link annotation, use a `Link` element. See
+[Tagged Links](accessibility.md#tagged-links) for text links and manually placed
+link annotations.
+
 If you are adding an annotation to a piece of text, such as a link or
 underline, you will need to know the width and height of the text in order to
 create the required rectangle for the annotation. There are two methods that

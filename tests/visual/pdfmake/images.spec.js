@@ -1,5 +1,7 @@
-import { jpeg as bee } from '../../images/bee';
-import { runDocTest } from '../helpers';
+import { fixture, runDocTest } from '../helpers.js';
+
+const bee = fixture('images/bee.jpg');
+const sampleImage = fixture('images/sampleImage.jpg');
 
 describe('pdfmake', function() {
   test('images', function() {
@@ -318,7 +320,7 @@ describe('pdfmake', function() {
       });
       doc.save();
       doc.restore();
-      doc.image('tests/images/sampleImage.jpg', 40, 68.125, {
+      doc.image(sampleImage, 40, 68.125, {
         width: 695,
         height: 310
       });
@@ -428,7 +430,7 @@ describe('pdfmake', function() {
       });
       doc.save();
       doc.restore();
-      doc.image('tests/images/sampleImage.jpg', 40, 392.1875, {
+      doc.image(sampleImage, 40, 392.1875, {
         width: 150,
         height: 66.90647482014388
       });
@@ -590,7 +592,7 @@ describe('pdfmake', function() {
       });
       doc.save();
       doc.restore();
-      doc.image('tests/images/sampleImage.jpg', 40, 473.1564748201439, {
+      doc.image(sampleImage, 40, 473.1564748201439, {
         width: 150,
         height: 150
       });
@@ -713,7 +715,7 @@ describe('pdfmake', function() {
       });
       doc.save();
       doc.restore();
-      doc.image('tests/images/sampleImage.jpg', 40, 637.2189748201439, {
+      doc.image(sampleImage, 40, 637.2189748201439, {
         width: 100,
         height: 44.60431654676259
       });

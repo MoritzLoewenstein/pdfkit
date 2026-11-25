@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { joinTokens, logData, uint8ArrayStringify } from './helpers';
@@ -14,7 +15,7 @@ describe('PDF/A-1', () => {
     doc.end();
     expect(data).toContainChunk([
       `11 0 obj`,
-      `<<\n/length 892\n/Type /Metadata\n/Subtype /XML\n/Length 894\n>>`,
+      /^<<\n\/Type \/Metadata\n\/Subtype \/XML\n\/Length \d+\n>>$/,
     ]);
   });
 
@@ -40,6 +41,12 @@ describe('PDF/A-1', () => {
     const data = logData(doc);
     doc.end();
     expect(data).toContainChunk(expected);
+    const profile = doc._root.data.OutputIntents[0].data.DestOutputProfile;
+    const bytes = data[data.indexOf(`${profile.id} 0 obj`) + 3];
+    expect(bytes).toEqual(
+      new Uint8Array(readFileSync('lib/mixins/data/sRGB_IEC61966_2_1.icc')),
+    );
+    expect(profile.data.Length).toBe(bytes.length);
   });
 
   test('metadata contains pdfaid part and conformance', () => {
@@ -96,15 +103,17 @@ describe('PDF/A-1', () => {
     doc.addPage();
     doc.registerFont('Roboto', globalThis.ROBOTO_DATA);
     doc.font('Roboto');
-    doc.text('Text');
+    // TrueType's subset encoder adds components for this composite glyph.
+    doc.text('é');
+    const font = doc._font;
+    expect(font.subset.glyphs).toHaveLength(2);
     doc.end();
 
-    let fontDescriptor = data.find((v) => {
-      return v.includes('/Type /FontDescriptor');
-    });
-
-    expect(fontDescriptor).not.toBeUndefined();
-
-    expect(fontDescriptor).toContain('/CIDSet');
+    expect(font.subset.glyphs).toHaveLength(4);
+    const { CIDSet } =
+      font.ref().data.DescendantFonts[0].data.FontDescriptor.data;
+    expect(data[data.indexOf(`${CIDSet.id} 0 obj`) + 3]).toEqual(
+      new Uint8Array([0b11110000]),
+    );
   });
 });

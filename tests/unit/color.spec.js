@@ -1,4 +1,4 @@
-import { describe, expect, inject, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import PDFDocument from '../../lib/document';
 import { logData } from './helpers';
 
@@ -30,11 +30,19 @@ describe('color', function () {
 
   test('normalize with spot color', function () {
     const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
-    doc.addSpotColor('PANTONE 123 C', 0.1, 0.2, 0.3, 0.4);
+    const data = logData(doc);
+    doc.addSpotColor('PANTONE 123 C/#', 0.1, 0.2, 0.3, 0.4);
 
-    const color = doc._normalizeColor('PANTONE 123 C');
+    const color = doc._normalizeColor('PANTONE 123 C/#');
     expect(color.id).toEqual('CS0');
     expect(color.values).toEqual([0.1, 0.2, 0.3, 0.4]);
+    expect(doc._normalizeColor('pantone 123 c/#')).toBeNull();
+    expect(data.join('')).toContain('/Separation /PANTONE#20123#20C#2F#23');
+  });
+
+  test('normalizes CSS names case-insensitively', () => {
+    const doc = new PDFDocument(globalThis.DEFAULT_OPTIONS);
+    expect(doc._normalizeColor('TeAl')).toEqual([0, 128 / 255, 128 / 255]);
   });
 
   test('spot color', function () {

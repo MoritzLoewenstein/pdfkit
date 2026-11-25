@@ -1,5 +1,6 @@
-import { jpeg as bee } from '../../images/bee';
-import { runDocTest } from '../helpers';
+import { fixture, runDocTest } from '../helpers.js';
+
+const bee = fixture('images/bee.jpg');
 
 describe('pdfmake', function() {
   // somehow the generated pdf changes at each run
