@@ -9,10 +9,10 @@ npm run docs
 npm run dev
 ```
 
-Open `/docs/index.html` on the Vite dev server. `npm run pdf-guide` writes
-`public/docs/guide.pdf` and `npm run website` builds the HTML, styles and preview
-images in `public/docs/`. Neither command needs a prior library build or
-ImageMagick. Keep these generated files out of commits.
+Open the root page on the Vite dev server to go to `/docs/index.html`.
+`npm run pdf-guide` writes `public/docs/guide.pdf` and `npm run website` builds
+the HTML, styles and preview images in `public/docs/`. Neither command needs a
+prior library build or ImageMagick. Keep these generated files out of commits.
 
 The generators use Markdown-it for Markdown, Lezer for JavaScript highlighting,
 and PDF.js and Sharp to render and crop previews of the first page of each
@@ -40,14 +40,11 @@ for untrusted code.
 ## GitHub Pages
 
 The [Pages workflow](../.github/workflows/pages.yml) builds and deploys the site
-from `main`. The playground is served at `/` and the documentation at
-`/docs/index.html`. To build the same static site locally, run `npm run docs`
+from `main`. The homepage redirects to `/docs/index.html`, and the docs sidebar
+links to `/playground/`. To build the same static site locally, run `npm run docs`
 before `npm run playground:build`; the output is in `dist-playground/`.
 
 To set up the public site, select **GitHub Actions** as the source in
 **Settings → Pages**. Set the custom domain to `pdfkit.moritzloewenstein.com`
 and add a DNS CNAME for `pdfkit` pointing to `moritzloewenstein.github.io`.
 Enable **Enforce HTTPS** once GitHub provisions the certificate.
-
-The separate `npm run publish-website` command publishes only the documentation
-to a `gh-pages` branch and requires an explicit destination repository URL.

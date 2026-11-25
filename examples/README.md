@@ -11,7 +11,7 @@ From the repository root, run `node examples/quickstart/simple_node.js` to colle
 the PDF as bytes or `node examples/quickstart/simple_node_stream.js` to stream it
 to a file. Both write their output in `examples/quickstart/`.
 
-Run `npm run dev` and open the root page for the editable playground, or choose
+Run `npm run dev` and open `/playground/` for the editable playground, or choose
 **Fixed preview** for the non-editable browser example. Edit the first call to
 `text()` and wait for the preview to update, then reload to check that your changes
 are restored. A JavaScript error is shown below the editor without discarding the

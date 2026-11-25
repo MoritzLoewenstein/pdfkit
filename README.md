@@ -87,7 +87,7 @@ For more, see the [examples](examples/README.md) and the [Getting Started guide]
 
 Import the package with your browser bundler, fetch font bytes with `fetch`, and
 use `toBlob(doc)` after `doc.end()`. No Node.js polyfills or `blob-stream` are needed.
-Run `npm run dev` in this repository to try the editable playground.
+Run `npm run dev` in this repository and open `/playground/` to try the editable playground.
 
 ## Documentation
 

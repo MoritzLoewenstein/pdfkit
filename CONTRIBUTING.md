@@ -39,7 +39,7 @@ To install the project you need to have `node`
 
 2.  `npm ci` to install dependencies from the lockfile
 3.  `npm run build` to build the library
-4.  `npm run dev` to open the editable browser playground
+4.  `npm run dev` and open `/playground/` for the editable browser playground
 
 ## Running and writing tests
 

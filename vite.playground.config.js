@@ -8,6 +8,7 @@ export default defineConfig({
     rollupOptions: {
       input: [
         resolve(import.meta.dirname, 'index.html'),
+        resolve(import.meta.dirname, 'playground/index.html'),
         resolve(import.meta.dirname, 'examples/quickstart/index.html'),
       ],
     },
