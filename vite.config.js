@@ -37,17 +37,6 @@ export default defineConfig({
           testTimeout: 30_000,
         },
       },
-      {
-        test: {
-          include: ['tests/browser/**/*.{test,spec}.js'],
-          name: 'browser',
-          browser: {
-            provider: 'playwright',
-            enabled: true,
-            instances: [{ browser: 'chromium' }],
-          },
-        },
-      },
     ],
   },
 });

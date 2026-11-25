@@ -226,4 +226,4 @@ function parseTextStreams(decodedStream, cMap = null) {
   return results;
 }
 
-export { logData, joinTokens, parseTextStreams, getObjects, getCMap };
+export { getCMap, getObjects, joinTokens, logData, parseTextStreams };

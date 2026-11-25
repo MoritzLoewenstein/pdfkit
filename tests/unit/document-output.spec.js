@@ -115,7 +115,7 @@ test('decrypts PDF 1.7ext3 text, attachment, metadata and named destination', as
     expect(items.map((item) => item.str).join('')).toBe('Encrypted content');
     expect((await pdf.getMetadata()).info.Title).toBe('Geheimes Résumé');
     expect(await pdf.getDestination('Résumé')).toBeTruthy();
-    expect((await pdf.getAttachments())['attachment.bin'].content).toEqual(
+    expect(await pdf.getAttachmentContent('attachment.bin')).toEqual(
       Uint8Array.of(0, 255, 128),
     );
   } finally {
