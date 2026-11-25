@@ -85,11 +85,12 @@ test.each([undefined, '1.3', '1.4', '1.5', '1.6', '1.7'])(
 );
 
 test('decrypts PDF 1.7ext3 text, attachment, metadata and named destination', async () => {
+  const password = `${'é'.repeat(63)}a`; // Exactly 127 UTF-8 bytes.
   const doc = new PDFDocument({
     ...globalThis.DEFAULT_OPTIONS,
     pdfVersion: '1.7ext3',
     compress: true,
-    userPassword: 'reader-password',
+    userPassword: `${password}b`,
     info: { Title: 'Geheimes Résumé' },
   });
   doc.text('Encrypted content');
@@ -107,7 +108,7 @@ test('decrypts PDF 1.7ext3 text, attachment, metadata and named destination', as
   } finally {
     await locked.destroy();
   }
-  const loading = getDocument({ data: bytes, password: 'reader-password' });
+  const loading = getDocument({ data: bytes, password });
   try {
     const pdf = await loading.promise;
     const page = await pdf.getPage(1);
